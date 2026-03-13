@@ -750,26 +750,36 @@ function App() {
                     title="What is Web3?" 
                     description="The new version of the internet where you own your own data, identity, and digital assets instead of relying on a few big companies."
                     icon={<Globe size={24} className="text-indigo-400" />}
+                    url="https://ethereum.org/en/web3/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-web3', name: 'Web3 Guide', url, icon: '🌐', category: 'Education' })}
                   />
                   <EduCard 
                     title="What is Blockchain?" 
                     description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
                     icon={<Layers size={24} className="text-emerald-400" />}
+                    url="https://ethereum.org/en/developers/docs/intro-to-ethereum/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-blockchain', name: 'Blockchain Docs', url, icon: '⛓️', category: 'Education' })}
                   />
                   <EduCard 
                     title="What is a Crypto Wallet?" 
                     description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
                     icon={<Wallet size={24} className="text-purple-400" />}
+                    url="https://ethereum.org/en/wallets/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-wallet', name: 'Wallet Guide', url, icon: '👛', category: 'Education' })}
                   />
                   <EduCard 
                     title="What are Smart Contracts?" 
                     description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
                     icon={<Cpu size={24} className="text-yellow-400" />}
+                    url="https://ethereum.org/en/developers/docs/smart-contracts/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-sc', name: 'Smart Contract Docs', url, icon: '📜', category: 'Education' })}
                   />
                   <EduCard 
                     title="What are dApps?" 
                     description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
                     icon={<Zap size={24} className="text-indigo-400" />}
+                    url="https://ethereum.org/en/developers/docs/dapps/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-dapps', name: 'dApp Guide', url, icon: '🏗️', category: 'Education' })}
                   />
                 </div>
               </div>
@@ -786,26 +796,36 @@ function App() {
                     title="Uniswap" 
                     description="A decentralized exchange (DEX) where you can swap tokens directly from your wallet without needing a central middleman."
                     tag="DeFi Exchange"
+                    url="https://app.uniswap.org"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-uniswap', name: 'Uniswap', url, icon: '🦄', category: 'dApp' })}
                   />
                   <EduCard 
                     title="OpenSea" 
                     description="The largest marketplace for digital collectibles (NFTs). You can buy, sell, or discover unique digital art and music here."
                     tag="NFT Marketplace"
+                    url="https://opensea.io"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-opensea', name: 'OpenSea', url, icon: '⛵', category: 'dApp' })}
                   />
                   <EduCard 
                     title="Aave" 
                     description="A protocol where you can lend or borrow crypto. It lets users earn interest on their deposits or take out loans instantly."
                     tag="Lending & Borrowing"
+                    url="https://app.aave.com"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-aave', name: 'Aave', url, icon: '👻', category: 'dApp' })}
                   />
                   <EduCard 
                     title="Lens Protocol" 
                     description="A decentralized social network graph. It allows users to own their social profile and content instead of the platform owning it."
                     tag="Decentralized Social"
+                    url="https://www.lens.xyz/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-lens', name: 'Lens', url, icon: '🌿', category: 'dApp' })}
                   />
                   <EduCard 
                     title="Friend.tech" 
                     description="A social app that lets you buy and sell 'keys' of social profiles, giving you access to private chats and community perks."
                     tag="Social Finance"
+                    url="https://www.friend.tech/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' })}
                   />
                 </div>
               </div>
@@ -1007,9 +1027,12 @@ function App() {
   );
 }
 
-function EduCard({ title, description, icon, tag }) {
+function EduCard({ title, description, icon, tag, url, onLearnMore }) {
   return (
-    <div className="glass-card p-10 rounded-[3rem] hover:border-indigo-500/40 transition-all cursor-pointer group flex flex-col items-start min-h-[300px] relative overflow-hidden">
+    <div 
+      className="glass-card p-10 rounded-[3rem] hover:border-indigo-500/40 transition-all cursor-pointer group flex flex-col items-start min-h-[300px] relative overflow-hidden"
+      onClick={() => onLearnMore && onLearnMore(url)}
+    >
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl group-hover:bg-indigo-600/10 transition-colors"></div>
       
       <div className="flex items-center justify-between w-full mb-8">
@@ -1030,7 +1053,9 @@ function EduCard({ title, description, icon, tag }) {
         {description}
       </p>
       
-      <div className="mt-auto pt-8 flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white/10 group-hover:text-indigo-500 transition-colors">
+      <div 
+        className="mt-auto pt-8 flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white/10 group-hover:text-indigo-400 transition-colors"
+      >
         Learn More <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
       </div>
     </div>
