@@ -734,100 +734,103 @@ function App() {
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="text-center mb-16 relative">
                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-[100px] -z-10"></div>
-                 <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">NEURAL INTELLIGENCE</h1>
-                 <p className="text-white/30 text-xl font-medium tracking-tight">Synchronizing your biological signature with the decentralized web.</p>
+                 <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">EDUCATION HUB</h1>
+                 <p className="text-white/30 text-xl font-medium tracking-tight uppercase tracking-widest">Master the decentralized frontier.</p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                {/* Neural Visualization */}
-                <div className="glass-card rounded-[3.5rem] p-12 border-white/5 relative overflow-hidden flex items-center justify-center min-h-[400px]">
-                   <div className="absolute inset-0 opacity-20 pointer-events-none">
-                      <svg width="100%" height="100%" className="animate-pulse">
-                        <defs>
-                          <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.5" />
-                            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                          </radialGradient>
-                        </defs>
-                        <line x1="20%" y1="20%" x2="50%" y2="50%" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
-                        <line x1="80%" y1="20%" x2="50%" y2="50%" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
-                        <line x1="20%" y1="80%" x2="50%" y2="50%" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
-                        <line x1="80%" y1="80%" x2="50%" y2="50%" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
-                        <circle cx="50%" cy="50%" r="100" fill="url(#nodeGlow)" />
-                      </svg>
-                   </div>
-                   <div className="relative text-center">
-                      <div className="w-32 h-32 glass rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl border-indigo-500/20 group cursor-pointer hover:scale-110 transition-transform">
-                         <Cpu size={64} className="text-indigo-400 group-hover:rotate-90 transition-transform duration-1000" />
-                      </div>
-                      <h3 className="text-2xl font-black uppercase tracking-tighter mb-2">Neural Core v1.0</h3>
-                      <p className="text-xs text-indigo-400 font-bold tracking-[0.4em] uppercase">Status: Syncing</p>
-                   </div>
+              {/* Web3 Basics Section */}
+              <div className="space-y-10">
+                <div className="flex items-center gap-4 border-l-4 border-indigo-500 pl-6">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Web3 Basics</h2>
+                  <div className="text-[10px] font-black uppercase text-indigo-400 bg-indigo-400/10 px-3 py-1 rounded-full border border-indigo-500/20">Beginner Friendly</div>
                 </div>
-
-                <div className="space-y-8">
-                   <div className="glass-card rounded-[3rem] p-10 border-white/10">
-                      <h3 className="text-xl font-black mb-8 uppercase tracking-widest text-indigo-400">Sync Mastery</h3>
-                      <div className="space-y-10">
-                         {['Protocol Logic', 'Decentralized Ops', 'Neural Persistence'].map((title, i) => (
-                           <div key={i}>
-                              <div className="flex justify-between mb-3">
-                                 <span className="text-xs font-black uppercase tracking-widest text-white/50">{title}</span>
-                                 <span className="text-xs font-black text-indigo-400">85%</span>
-                              </div>
-                              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                 <div className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 animate-pulse" style={{ width: '85%' }}></div>
-                              </div>
-                           </div>
-                         ))}
-                      </div>
-                   </div>
-
-                   <div className="glass-card rounded-[3rem] p-10 border-white/10 flex items-center justify-between">
-                      <div className="flex items-center gap-6">
-                         <div className="w-14 h-14 glass rounded-2xl flex items-center justify-center text-indigo-400">
-                            <Activity size={28} />
-                         </div>
-                         <div>
-                            <h4 className="font-black text-lg uppercase leading-none">Intelligence Yield</h4>
-                            <p className="text-xs text-white/30 font-bold mt-1 uppercase">Earned per cycle</p>
-                         </div>
-                      </div>
-                      <div className="text-3xl font-black text-emerald-400">+1.2k</div>
-                   </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <EduCard 
+                    title="What is Web3?" 
+                    description="The new version of the internet where you own your own data, identity, and digital assets instead of relying on a few big companies."
+                    icon={<Globe size={24} className="text-indigo-400" />}
+                  />
+                  <EduCard 
+                    title="What is Blockchain?" 
+                    description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
+                    icon={<Layers size={24} className="text-emerald-400" />}
+                  />
+                  <EduCard 
+                    title="What is a Crypto Wallet?" 
+                    description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
+                    icon={<Wallet size={24} className="text-purple-400" />}
+                  />
+                  <EduCard 
+                    title="What are Smart Contracts?" 
+                    description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
+                    icon={<Cpu size={24} className="text-yellow-400" />}
+                  />
+                  <EduCard 
+                    title="What are dApps?" 
+                    description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
+                    icon={<Zap size={24} className="text-indigo-400" />}
+                  />
                 </div>
               </div>
 
-              {/* Frontier Lab Simulator */}
-              <div className="glass-card rounded-[4rem] p-16 border-indigo-500/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent">
-                 <div className="absolute top-0 right-0 p-8">
-                   <div className="flex gap-2">
-                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                   </div>
-                 </div>
-                 
-                 <div className="max-w-xl">
-                    <h2 className="text-4xl font-black tracking-tighter mb-6 uppercase italic">The Frontier Lab</h2>
-                    <p className="text-white/40 text-lg font-medium leading-relaxed mb-10">
-                       Experience protocol interactions in a low-latency neural environment. Run payload simulations without risking live assets.
+              {/* Popular dApps Section */}
+              <div className="space-y-10 pt-10">
+                <div className="flex items-center gap-4 border-l-4 border-purple-500 pl-6">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Popular Web3 dApps</h2>
+                  <div className="text-[10px] font-black uppercase text-purple-400 bg-purple-400/10 px-3 py-1 rounded-full border border-purple-500/20">Protocol Spotlight</div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <EduCard 
+                    title="Uniswap" 
+                    description="A decentralized exchange (DEX) where you can swap tokens directly from your wallet without needing a central middleman."
+                    tag="DeFi Exchange"
+                  />
+                  <EduCard 
+                    title="OpenSea" 
+                    description="The largest marketplace for digital collectibles (NFTs). You can buy, sell, or discover unique digital art and music here."
+                    tag="NFT Marketplace"
+                  />
+                  <EduCard 
+                    title="Aave" 
+                    description="A protocol where you can lend or borrow crypto. It lets users earn interest on their deposits or take out loans instantly."
+                    tag="Lending & Borrowing"
+                  />
+                  <EduCard 
+                    title="Lens Protocol" 
+                    description="A decentralized social network graph. It allows users to own their social profile and content instead of the platform owning it."
+                    tag="Decentralized Social"
+                  />
+                  <EduCard 
+                    title="Friend.tech" 
+                    description="A social app that lets you buy and sell 'keys' of social profiles, giving you access to private chats and community perks."
+                    tag="Social Finance"
+                  />
+                </div>
+              </div>
+
+              {/* Concept Visualization */}
+              <div className="glass-card rounded-[4rem] p-16 border-indigo-500/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent flex flex-col lg:flex-row items-center gap-12">
+                 <div className="flex-1 space-y-8">
+                    <h2 className="text-5xl font-black tracking-tighter uppercase italic leading-none">THE BLOCKCHAIN <br/><span className="gradient-text">REVOLUTION</span></h2>
+                    <p className="text-white/40 text-lg font-medium leading-relaxed">
+                       Blockchain technology is the foundation of Web3. It creates a digital environment where users can interact, trade, and build without permission from central authorities.
                     </p>
-                    <div className="flex gap-4">
-                       <button className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95 flex items-center gap-3">
-                          <Play size={20} /> RUN SIMULATION
-                       </button>
-                       <button className="glass px-10 py-5 rounded-[2rem] font-black text-lg hover:bg-white/5 transition-all flex items-center gap-3 border-white/10 text-white/60">
-                          <Layers size={20} /> VIEW LAYER SCHEMATICS
+                    <div className="flex gap-6">
+                       <button className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95">
+                          START JOURNEY
                        </button>
                     </div>
                  </div>
-
-                 <div className="absolute bottom-0 right-[-10%] w-[50%] h-[80%] opacity-20 rotate-12 pointer-events-none">
-                    <div className="grid grid-cols-4 gap-4">
-                       {[...Array(24)].map((_, i) => (
-                         <div key={i} className="aspect-square glass rounded-2xl border-white/10 animate-pulse" style={{ animationDelay: `${i * 100}ms` }}></div>
-                       ))}
+                 <div className="flex-1 w-full flex justify-center">
+                    <div className="w-full max-w-md aspect-square glass rounded-[3rem] border-white/5 overflow-hidden flex items-center justify-center relative group">
+                        <div className="absolute inset-0 bg-indigo-600/10 group-hover:bg-indigo-600/20 transition-colors"></div>
+                        <Layers size={100} className="text-indigo-400 animate-float opacity-30" />
+                        <div className="absolute flex flex-col items-center gap-2">
+                           <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-glow"></div>
+                           <div className="w-1 h-32 bg-gradient-to-b from-indigo-500 to-transparent"></div>
+                        </div>
                     </div>
                  </div>
               </div>
@@ -1000,6 +1003,36 @@ function App() {
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function EduCard({ title, description, icon, tag }) {
+  return (
+    <div className="glass-card p-10 rounded-[3rem] hover:border-indigo-500/40 transition-all cursor-pointer group flex flex-col items-start min-h-[300px] relative overflow-hidden">
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl group-hover:bg-indigo-600/10 transition-colors"></div>
+      
+      <div className="flex items-center justify-between w-full mb-8">
+        <div className="w-14 h-14 glass rounded-2xl flex items-center justify-center shadow-lg border-white/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+          {icon || <Activity size={24} className="text-purple-400" />}
+        </div>
+        {tag && (
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+            {tag}
+          </span>
+        )}
+      </div>
+
+      <h3 className="text-2xl font-black mb-4 uppercase tracking-tight group-hover:text-indigo-400 transition-colors leading-tight">
+        {title}
+      </h3>
+      <p className="text-base text-white/40 font-medium leading-relaxed group-hover:text-white/60 transition-colors">
+        {description}
+      </p>
+      
+      <div className="mt-auto pt-8 flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white/10 group-hover:text-indigo-500 transition-colors">
+        Learn More <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+      </div>
     </div>
   );
 }
