@@ -101,7 +101,8 @@ function App() {
       // Skip the backend check and go straight to proxy for these for speed.
       const VIP_SITES = [
         'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
-        'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com'
+        'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com',
+        'geeksforgeeks.org', 'wikipedia.org', 'investopedia.com', 'medium.com'
       ];
       const domain = activeDApp.url.toLowerCase();
       
