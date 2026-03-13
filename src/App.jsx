@@ -99,7 +99,12 @@ function App() {
       
       // VIP Sites: Domains that we KNOW block iframes. 
       // Skip the backend check and go straight to proxy for these for speed.
-      const VIP_SITES = ['youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'linkedin.com'];
+      const VIP_SITES = [
+        'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
+        'facebook.com', 'instagram.com', 'linkedin.com', 'ethereum.org', 'coinbase.com', 
+        'ibm.com', 'binance.com', 'academy.binance.com', 'uniswap.org', 'app.uniswap.org',
+        'aave.com', 'app.aave.com', 'lens.xyz', 'friend.tech'
+      ];
       const domain = activeDApp.url.toLowerCase();
       
       if (VIP_SITES.some(site => domain.includes(site))) {
@@ -757,29 +762,29 @@ function App() {
                     title="What is Blockchain?" 
                     description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
                     icon={<Layers size={24} className="text-emerald-400" />}
-                    url="https://ethereum.org/en/developers/docs/intro-to-ethereum/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-blockchain', name: 'Blockchain Docs', url, icon: '⛓️', category: 'Education' })}
+                    url="https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: '⛓️', category: 'Education' })}
                   />
                   <EduCard 
                     title="What is a Crypto Wallet?" 
                     description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
                     icon={<Wallet size={24} className="text-purple-400" />}
-                    url="https://ethereum.org/en/wallets/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-wallet', name: 'Wallet Guide', url, icon: '👛', category: 'Education' })}
+                    url="https://www.coinbase.com/learn/crypto-basics/what-is-a-crypto-wallet"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-wallet', name: 'Wallet Essentials', url, icon: '👛', category: 'Education' })}
                   />
                   <EduCard 
                     title="What are Smart Contracts?" 
                     description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
                     icon={<Cpu size={24} className="text-yellow-400" />}
-                    url="https://ethereum.org/en/developers/docs/smart-contracts/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-sc', name: 'Smart Contract Docs', url, icon: '📜', category: 'Education' })}
+                    url="https://www.ibm.com/topics/smart-contracts"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-sc', name: 'Smart Contract Hub', url, icon: '📜', category: 'Education' })}
                   />
                   <EduCard 
                     title="What are dApps?" 
                     description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
                     icon={<Zap size={24} className="text-indigo-400" />}
-                    url="https://ethereum.org/en/developers/docs/dapps/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-dapps', name: 'dApp Guide', url, icon: '🏗️', category: 'Education' })}
+                    url="https://academy.binance.com/en/articles/what-are-decentralized-applications-dapps"
+                    onLearnMore={(url) => setActiveDApp({ id: 'edu-dapps', name: 'dApp Essentials', url, icon: '🏗️', category: 'Education' })}
                   />
                 </div>
               </div>
