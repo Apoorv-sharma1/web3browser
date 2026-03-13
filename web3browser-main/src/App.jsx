@@ -49,7 +49,74 @@ function App() {
       .catch(err => console.error('Failed to fetch dApps', err));
   }, []);
 
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Debounced search suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length > 0 && !(/^(http:\/\/|https:\/\/)/i.test(searchQuery) || searchQuery.includes('.'))) {
+        try {
+          const res = await fetch(`${API_URL}/search/suggest?q=${encodeURIComponent(searchQuery)}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSuggestions(data.slice(0, 5)); // Limit to top 5
+            setShowSuggestions(true);
+          }
+        } catch (e) {
+          console.error('Suggest error:', e);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const executeSearch = async (queryToSearch) => {
+    const query = queryToSearch.trim();
+    if (!query) return;
+
+    setShowSuggestions(false);
+    
+    // URL detection based on user rules
+    const isUrl = query.startsWith('http://') || query.startsWith('https://') || query.includes('.');
+    
+    if (isUrl) {
+      const url = query.startsWith('http') ? query : `https://${query}`;
+      setSearchQuery(query);
+      setActiveDApp({ id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' });
+      setActiveTab('explore');
+    } else {
+      // Perform Search
+      setSearchQuery(query);
+      setActiveDApp(null);
+      setActiveTab('search');
+      setIsSearching(true);
+      console.log('Fetching results from:', `${API_URL}/search?q=${encodeURIComponent(query)}`);
+      try {
+        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+        if(res.ok) {
+          const data = await res.json();
+          console.log('Search results received:', data.length);
+          setSearchResults(data);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error('Search failed', err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
   const connectWallet = async () => {
+    // ...existing connectWallet logic...
     if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
@@ -91,6 +158,7 @@ function App() {
   };
 
   const claimReward = async () => {
+    // ...existing claimReward logic...
     if (!walletAddress) return alert('Connect wallet first');
     
     fetch(`${API_URL}/rewards/claim`, {
@@ -140,39 +208,68 @@ function App() {
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={async (e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    const query = searchQuery.trim();
-                    // Basic URL detection
-                    if (/^(http:\/\/|https:\/\/)/i.test(query) || /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/.*)?$/.test(query)) {
-                      const url = query.startsWith('http') ? query : `https://${query}`;
-                      setActiveDApp({ id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' });
-                      setActiveTab('explore');
-                    } else {
-                      // Perform Search
-                      setActiveDApp(null);
-                      setActiveTab('search');
-                      setIsSearching(true);
-                      try {
-                        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
-                        if(res.ok) {
-                          const data = await res.json();
-                          setSearchResults(data);
-                        } else {
-                          setSearchResults([]);
-                        }
-                      } catch (err) {
-                        console.error('Search failed', err);
-                        setSearchResults([]);
-                      } finally {
-                        setIsSearching(false);
-                      }
-                    }
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    executeSearch(searchQuery);
+                    e.target.blur();
                   }
                 }}
                 placeholder="Search the web or enter URL..." 
                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-light"
               />
+              
+              {/* Autocomplete Dropdown */}
+              {showSuggestions && searchQuery.trim().length > 0 && (
+                <div className="absolute top-14 left-0 w-full bg-[#161a1f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                  {/* Default Action (Search or Navigate) */}
+                  <div 
+                    className="px-4 py-3 hover:bg-white/5 cursor-pointer flex items-center gap-3 transition-colors border-b border-white/5"
+                    onClick={() => {
+                      executeSearch(searchQuery);
+                    }}
+                  >
+                    {searchQuery.includes('.') || searchQuery.startsWith('http') ? (
+                      <Globe size={14} className="text-white/50" />
+                    ) : (
+                      <Search size={14} className="text-white/50" />
+                    )}
+                    <span className="text-sm font-light text-white/90">
+                      <span className="font-semibold">{searchQuery}</span>
+                      <span className="text-white/40 ml-2">
+                        - {searchQuery.includes('.') || searchQuery.startsWith('http') ? 'Navigate to URL' : 'Web3Browser Search'}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* API Suggestions */}
+                  {suggestions.map((suggestion, index) => (
+                    <div 
+                      key={index}
+                      className="px-4 py-3 hover:bg-white/5 cursor-pointer flex items-center gap-4 transition-colors border-b border-white/5 last:border-0"
+                      onClick={() => {
+                        setSearchQuery(suggestion.phrase);
+                        executeSearch(suggestion.phrase);
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                        {suggestion.type === 'internal' ? (
+                          <Globe size={14} className="text-white/50" />
+                        ) : (
+                          <Search size={14} className="text-white/30" />
+                        )}
+                      </div>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-light text-white/90 truncate">{suggestion.phrase}</span>
+                        {suggestion.subtitle && (
+                          <span className="text-[10px] text-white/30 truncate">{suggestion.subtitle}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
