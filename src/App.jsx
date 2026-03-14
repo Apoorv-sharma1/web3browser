@@ -29,7 +29,8 @@ import {
   ShieldCheck,
   Lock,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  X
 } from 'lucide-react';
 
 // Mock dApps Data
@@ -422,9 +423,21 @@ function App() {
                   }
                 }}
                 placeholder="Search the decentralized web..." 
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-6 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all font-medium text-lg placeholder:text-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all font-medium text-lg placeholder:text-white/20"
               />
               
+              {searchQuery && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery('');
+                  }}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95"
+                >
+                  <X size={18} />
+                </button>
+              )}
+
               {/* Autocomplete Dropdown */}
               {showSuggestions && searchQuery.trim().length > 0 && (
                 <div className="absolute top-16 left-0 w-full glass rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden z-50 border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
