@@ -1053,6 +1053,7 @@ function App() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+                    setShowSuggestions(false);
                     executeSearch(activeTabObj.query);
                     e.target.blur();
                   }
@@ -1068,14 +1069,18 @@ function App() {
                 <Star size={16} className={activeTabObj.isBookmarked ? "text-yellow-400 fill-yellow-400" : "text-white/10"} />
               </button>
               
-              {showSuggestions && activeTabObj.query && (
-                <div className="absolute top-[4.5rem] left-0 w-full glass rounded-2xl shadow-2xl overflow-hidden z-50 border-white/10">
+              {/* Show suggestions only while typing (not when search results are already shown) */}
+              {showSuggestions && activeTabObj.query && activeTabObj.type !== 'search' && suggestions.length > 0 && (
+                <div className="absolute top-[calc(100%+8px)] left-0 w-full glass rounded-2xl shadow-2xl overflow-hidden z-50 border-white/10">
                   <div className="flex flex-col">
                     {(Array.isArray(suggestions) ? suggestions : []).map((suggestion, index) => (
                     <div 
                       key={index}
                       className="px-5 py-3.5 hover:bg-white/5 cursor-pointer flex items-center gap-4 transition-colors border-b border-white/5 last:border-0"
-                      onClick={() => {
+                      onMouseDown={(e) => {
+                        // Use mousedown to fire before blur hides the dropdown
+                        e.preventDefault();
+                        setShowSuggestions(false);
                         updateActiveTab({ query: suggestion.phrase });
                         executeSearch(suggestion.phrase);
                       }}
@@ -1118,7 +1123,7 @@ function App() {
         {/* Main App Workspace */}
         <div className="flex-1 bg-black/20 flex flex-col relative overflow-hidden">
           {(Array.isArray(tabs) ? tabs : []).map(tab => (
-            <div key={tab.id} className={tab.id === activeTabId ? "block h-full" : "hidden"}>
+            <div key={tab.id} className={tab.id === activeTabId ? "flex flex-col h-full" : "hidden"}>
               {tab.dapp ? (
                 <div className="browser-content-area animate-in fade-in duration-500 overflow-hidden">
                   <div className="h-10 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md shrink-0">
@@ -1206,8 +1211,8 @@ function App() {
                   </div>
                 </div>
               ) : tab.type === 'search' ? (
-                 <section className="browser-content-area animate-in fade-in duration-500 overflow-y-auto standard-scrollbar pb-20">
-                   <div className="max-w-4xl mx-auto py-8 px-8">
+                 <section className="flex-1 h-full min-h-0 overflow-y-auto animate-in fade-in duration-500 standard-scrollbar">
+                   <div className="max-w-4xl mx-auto py-8 px-8 pb-20">
                      <div className="mb-8">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400/60 mb-2">Neural Indexed Results</h2>
                         <h1 className="text-4xl font-black tracking-tighter uppercase italic opacity-90">Results for <span className="text-indigo-400">"{tab.query}"</span></h1>
@@ -1265,7 +1270,8 @@ function App() {
                    </div>
                  </section>
           ) : tab.type === 'explore' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
               <div className="relative text-center max-w-3xl mx-auto">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black tracking-widest uppercase mb-8">
                   <TrendingUp size={14} /> Trending on Web3
@@ -1339,8 +1345,10 @@ function App() {
                 </div>
               </div>
             </section>
+            </div>
           ) : tab.type === 'dapps' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
               <div className="flex flex-col lg:flex-row items-end justify-between gap-6 border-b border-white/5 pb-10">
                 <div>
                   <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase leading-none italic">ECOSYSTEM</h1>
@@ -1382,8 +1390,10 @@ function App() {
                 ))}
               </div>
             </section>
+            </div>
           ) : tab.type === 'rewards' ? (
-             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20 relative">
+             <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20 relative px-10 pt-10">
                 <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
                 
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
@@ -1557,13 +1567,17 @@ function App() {
                     </div>
                 </div>
              </section>
+             </div>
           ) : tab.type === 'builtin-content' ? (
+             <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
              <BuiltinContentView 
                content={INTERNAL_CONTENT[tab.contentId]} 
                onBack={() => updateActiveTab({ type: INTERNAL_CONTENT[tab.contentId]?.category === 'Education' ? 'education' : 'security' })} 
              />
+             </div>
           ) : tab.type === 'wtf-zone' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
                <div className="text-center mb-16 relative">
                   <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-600/10 blur-[100px] -z-10"></div>
                   <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">WTF ZONE</h1>
@@ -1624,8 +1638,10 @@ function App() {
                   </div>
                </div>
             </section>
+            </div>
           ) : tab.type === 'education' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
               <div className="text-center mb-16 relative">
                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-[100px] -z-10"></div>
                  <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">EDUCATION HUB</h1>
@@ -1767,8 +1783,10 @@ function App() {
                  </div>
               </div>
             </section>
+            </div>
           ) : tab.type === 'security' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
               <div className="text-center mb-16 relative">
                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 blur-[100px] -z-10"></div>
                  <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">SECURITY PROTOCOL</h1>
@@ -2131,13 +2149,16 @@ function App() {
                 </div>
               </div>
             </section>
+            </div>
           ) : (
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar flex flex-col items-center justify-center">
             <div className="flex flex-col items-center justify-center py-40 animate-in zoom-in duration-1000">
                 <div className="w-32 h-32 bg-white/5 rounded-[2.5rem] flex items-center justify-center mb-10 border border-white/10 shadow-2xl animate-float">
                     <Globe size={64} className="text-white/10" />
                 </div>
                 <h3 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-20">Protocol Offline</h3>
                 <p className="font-bold text-white/10 tracking-[0.4em] uppercase text-sm">Awaiting Network Sync</p>
+            </div>
             </div>
             )}
             </div>
