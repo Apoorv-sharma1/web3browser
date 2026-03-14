@@ -875,14 +875,14 @@ function App() {
 
       {/* Main App Workspace */}
       {/* Sidebar */}
-      <aside className="w-20 lg:w-72 border-r border-white/5 flex flex-col items-center lg:items-stretch py-8 px-5 bg-[#0a0c0f] relative z-20 shadow-2xl">
-        <div className="flex items-center gap-4 px-3 mb-12 overflow-hidden group cursor-pointer" onClick={() => {updateActiveTab({ type: 'explore', dapp: null })}}>
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform duration-500">
-            <Globe size={26} className="text-white animate-pulse" />
+      <aside className="w-16 lg:w-64 border-r border-white/5 flex flex-col items-center lg:items-stretch py-6 px-4 bg-[#0a0c0f] relative z-20 shadow-2xl">
+        <div className="flex items-center gap-3 px-2 mb-10 overflow-hidden group cursor-pointer" onClick={() => {updateActiveTab({ type: 'explore', dapp: null })}}>
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform duration-500">
+            <Globe size={22} className="text-white" />
           </div>
           <div className="hidden lg:block overflow-hidden">
-            <span className="text-2xl font-black tracking-tighter text-white block leading-none">WEB3</span>
-            <span className="text-xs font-bold tracking-[0.2em] text-indigo-400 uppercase opacity-80">Browser</span>
+            <span className="text-xl font-black tracking-tighter text-white block leading-none">WEB3</span>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-400 uppercase opacity-60">Browser</span>
           </div>
         </div>
 
@@ -950,10 +950,10 @@ function App() {
         </div>
 
         {/* Header (Integrated Navigation) */}
-        <header className="h-20 border-b border-white/5 flex items-center justify-between px-10 bg-[#07090c]/40 backdrop-blur-2xl sticky top-0 z-30">
-          <div className="flex items-center gap-5 flex-1 max-w-4xl">
+        <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#07090c]/60 backdrop-blur-3xl sticky top-0 z-30 gap-4">
+          <div className="flex items-center gap-4 flex-1 max-w-5xl">
             {/* Nav Controls */}
-            <div className="flex items-center gap-2 pr-4 border-r border-white/10">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button 
                 disabled={activeTabObj.historyIndex <= 0}
                 onClick={() => {
@@ -969,9 +969,9 @@ function App() {
                     });
                   }
                 }}
-                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+                className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </button>
               <button 
                 disabled={!activeTabObj.history || activeTabObj.historyIndex >= activeTabObj.history.length - 1}
@@ -988,9 +988,9 @@ function App() {
                     });
                   }
                 }}
-                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+                className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </button>
               <button 
                  onClick={() => {
@@ -1001,15 +1001,15 @@ function App() {
                      else setIframeStatus('loaded');
                    }, 100);
                  }}
-                 className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
-                 title="Force Reload Sync"
+                 className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
+                 title="Reload"
                >
-                 <RefreshCw size={18} className={iframeStatus === 'loading' ? 'animate-spin text-indigo-400' : ''} />
+                 <RefreshCw size={16} className={iframeStatus === 'loading' ? 'animate-spin text-indigo-400' : ''} />
                </button>
             </div>
 
             <div className="relative w-full group">
-              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-indigo-400 transition-all duration-300" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-indigo-400 transition-all" />
               <input 
                 type="text" 
                 value={activeTabObj.query || ''}
@@ -1022,43 +1022,33 @@ function App() {
                     e.target.blur();
                   }
                 }}
-                placeholder="Search the decentralized web..." 
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-14 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all font-medium text-base placeholder:text-white/20"
+                placeholder="Search or enter URL..." 
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-2 pl-12 pr-10 focus:outline-none focus:ring-1 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-medium text-sm placeholder:text-white/10"
               />
               
               <button 
                 onClick={() => updateActiveTab({ isBookmarked: !activeTabObj.isBookmarked })}
-                className="absolute right-5 top-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 active:scale-95"
+                className="absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-200"
               >
-                <Star size={18} className={activeTabObj.isBookmarked ? "text-yellow-400 fill-yellow-400" : "text-white/20"} />
+                <Star size={16} className={activeTabObj.isBookmarked ? "text-yellow-400 fill-yellow-400" : "text-white/10"} />
               </button>
-
-              {/* Autocomplete Dropdown */}
-              {showSuggestions && activeTabObj.query && activeTabObj.query.trim().length > 0 && (
-                <div className="absolute top-16 left-0 w-full glass rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden z-50 border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
+              
+              {showSuggestions && activeTabObj.query && (
+                <div className="absolute top-[4.5rem] left-0 w-full glass rounded-2xl shadow-2xl overflow-hidden z-50 border-white/10">
                   <div className="flex flex-col">
                     {(Array.isArray(suggestions) ? suggestions : []).map((suggestion, index) => (
                     <div 
                       key={index}
-                      className="px-6 py-4 hover:bg-white/5 cursor-pointer flex items-center gap-5 transition-colors border-b border-white/5 last:border-0"
+                      className="px-5 py-3.5 hover:bg-white/5 cursor-pointer flex items-center gap-4 transition-colors border-b border-white/5 last:border-0"
                       onClick={() => {
                         updateActiveTab({ query: suggestion.phrase });
                         executeSearch(suggestion.phrase);
                       }}
                     >
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
-                        {suggestion.type === 'internal' ? (
-                          <Globe size={16} className="text-indigo-400" />
-                        ) : (
-                          <Search size={16} className="text-white/20" />
-                        )}
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                        {suggestion.type === 'internal' ? <Globe size={14} className="text-indigo-400" /> : <Search size={14} className="text-white/20" />}
                       </div>
-                      <div className="flex flex-col overflow-hidden">
-                        <span className="text-base font-bold text-white/90 truncate">{suggestion.phrase}</span>
-                        {suggestion.subtitle && (
-                          <span className="text-xs text-white/40 truncate tracking-wide">{suggestion.subtitle}</span>
-                        )}
-                      </div>
+                      <span className="text-sm font-bold text-white/80">{suggestion.phrase}</span>
                     </div>
                     ))}
                   </div>
@@ -1067,37 +1057,25 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
-             <div className="hidden xl:flex items-center bg-white/5 border border-white/10 rounded-2xl px-5 py-2.5 gap-4">
+          <div className="flex items-center gap-3">
+             <div className="hidden lg:flex items-center bg-white/5 border border-white/5 rounded-xl px-4 py-1.5 gap-4">
                <div className="text-right">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Points</p>
-                  <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{points.toLocaleString()}</p>
+                  <p className="text-[9px] uppercase tracking-widest text-white/20 font-black">Sync</p>
+                  <p className="text-xs font-black text-indigo-400">{points.toLocaleString()}</p>
                </div>
-               <div className="w-px h-8 bg-white/10"></div>
+               <div className="w-px h-6 bg-white/5"></div>
                <div className="text-right">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-black">Hela</p>
-                  <p className="text-lg font-bold text-emerald-400">{helaBalance}</p>
-               </div>
-               <div className="w-px h-8 bg-white/10"></div>
-               <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center">
-                  <Zap size={20} className="text-indigo-400" />
+                  <p className="text-[9px] uppercase tracking-widest text-emerald-400/50 font-black">Hela</p>
+                  <p className="text-xs font-black text-emerald-400">{helaBalance}</p>
                </div>
             </div>
             
             <button 
-              onClick={() => {
-                if (walletAddress) {
-                   fetchHLUSDBalance(walletAddress);
-                   setShowWalletModal(true);
-                } else {
-                   connectWallet();
-                }
-              }}
-              className="group relative flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-7 py-3.5 rounded-2xl transition-all shadow-xl shadow-indigo-600/30 font-bold active:scale-95"
+              onClick={() => walletAddress ? setShowWalletModal(true) : connectWallet()}
+              className="flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/10 active:scale-95"
             >
-              <Wallet size={20} className="group-hover:rotate-12 transition-transform" />
-              <span className="text-base">{walletAddress ? truncateAddress(walletAddress) : 'Connect Wallet'}</span>
-              <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <Wallet size={16} />
+              <span>{walletAddress ? truncateAddress(walletAddress) : 'Connect'}</span>
             </button>
           </div>
         </header>
@@ -1107,149 +1085,125 @@ function App() {
           {(Array.isArray(tabs) ? tabs : []).map(tab => (
             <div key={tab.id} className={tab.id === activeTabId ? "block h-full" : "hidden"}>
               {tab.dapp ? (
-                <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
-                  <div className="glass-card mb-8 p-4 rounded-3xl flex items-center justify-between border-indigo-500/10">
+                <div className="browser-content-area animate-in fade-in duration-500 overflow-hidden">
+                  <div className="h-10 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span className="text-[10px] font-black tracking-widest text-white/40 uppercase">Secure Bridge Active</span>
+                      </div>
+                      <div className="w-px h-4 bg-white/10"></div>
+                      <div className="flex items-center gap-2 opacity-60">
+                         {tab.dapp.icon && <span className="scale-75 origin-left">{tab.dapp.icon}</span>}
+                         <span className="text-[10px] font-bold text-white/50 truncate max-w-[200px]">{tab.dapp.name}</span>
+                      </div>
+                    </div>
+                    
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-bold tracking-wide text-white/60">SECURE CONNECTION ESTABLISHED via PROXY CHANNEL</span>
-                    </div>
-                    <button 
-                      onClick={() => window.open(tab.dapp.url, '_blank')}
-                      className="group py-2 px-4 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-400 hover:text-white transition-all duration-300 font-bold text-sm flex items-center gap-2"
-                    >
-                      Bypass Browser <ExternalLink size={16} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-6">
                       <button 
-                        onClick={() => updateActiveTab({ dapp: null, type: 'explore' })} 
-                        className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center group border-white/10"
+                         onClick={() => window.open(tab.dapp.url, '_blank')}
+                         className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-black uppercase tracking-widest border border-indigo-500/10 transition-all"
                       >
-                        <ChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform text-white/40 group-hover:text-white" />
+                         Bypass <ExternalLink size={10} />
                       </button>
-                      <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-4xl shadow-2xl animate-float">
-                        {tab.dapp.icon}
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-black tracking-tight mb-1">{tab.dapp.name}</h2>
-                        <p className="text-base text-white/40 font-medium tracking-wide">{tab.dapp.url}</p>
-                      </div>
-                          <div className="flex gap-4">
-                       <button onClick={() => alert('Security Audit: Neural environment secure.')} className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center border-white/5">
-                         <Shield size={24} className="text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
-                       </button>
-                       <button onClick={() => alert('Global Node: Synchronized to Hela Mainnet.')} className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center border-white/5">
-                         <Globe size={24} className="text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.5)]" />
-                       </button>
-                     </div>
                     </div>
                   </div>
 
-                  <div className="flex-1 glass rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 relative bg-[#12141a]">
+                  <div className="flex-1 relative bg-white overflow-hidden">
                     {iframeStatus === 'loading' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl z-20">
-                        <div className="w-16 h-16 relative">
-                            <div className="absolute inset-0 border-4 border-indigo-500/10 rounded-full"></div>
-                            <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                        <p className="mt-8 text-lg font-black tracking-[0.2em] uppercase text-white/50">Securing environment</p>
-                        <p className="mt-2 text-[10px] text-indigo-400 font-bold uppercase tracking-widest animate-pulse">Resolving cross-origin restrictions...</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07090c] z-20">
+                        <div className="w-12 h-12 border-2 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                        <p className="mt-4 text-[9px] font-black tracking-[0.3em] uppercase text-white/20">Establishing Neural Link</p>
                       </div>
                     )}
 
                     {iframeStatus === 'blocked' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07090c] p-10 text-center z-10 animate-in fade-in duration-500">
-                         <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center mb-8 border border-red-500/20 shadow-2xl">
-                            <ShieldAlert size={48} className="text-red-400" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07090c] p-10 text-center z-10">
+                         <div className="w-20 h-20 bg-red-500/5 rounded-2xl flex items-center justify-center mb-6 border border-red-500/10 shadow-2xl">
+                            <ShieldAlert size={40} className="text-red-400/60" />
                          </div>
-                         <h3 className="text-4xl font-black mb-4 tracking-tighter uppercase italic text-white/90">Protocol Offline</h3>
-                         <p className="max-w-md text-white/40 text-sm font-bold mb-8 leading-relaxed">
-                            The target node has restricted cross-origin neural syncing (X-Frame-Options). To maintain 100% security, we recommend launching in a secure external sandbox.
+                         <h3 className="text-3xl font-black mb-3 tracking-tighter uppercase italic text-white/80">Cross-Origin Breach</h3>
+                         <p className="max-w-md text-white/20 text-xs font-bold mb-8 leading-relaxed">
+                            This node enforces strict origin isolation. Establishing an external breach is required to proceed.
                          </p>
                          <button 
                            onClick={() => window.open(tab.dapp.url, '_blank')}
-                           className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl shadow-indigo-600/30 active:scale-95"
+                           className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95"
                          >
-                            Establish External Breach
+                            Launch External Sandbox
                          </button>
                       </div>
                     )}
 
-                    {tab.dapp?.url && (tab.dapp.url.includes('helalabs.com') || tab.dapp.url.includes('hela.network')) ? (
-                       <iframe 
-                         key={iframeKey}
-                         src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
-                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                         className={`w-full h-full border-none bg-white transition-opacity duration-700 ${iframeStatus === 'loaded' ? 'opacity-95' : 'opacity-0'}`} 
-                         title={`${tab.dapp.name} (Proxied)`} 
-                         onLoad={() => setIframeStatus('loaded')}
-                       />
-                     ) : tab.dapp?.url ? (
-                       <iframe 
-                         key={iframeKey}
-                         src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`}
-                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                         className={`w-full h-full border-none bg-white transition-opacity duration-700 ${iframeStatus === 'loaded' ? 'opacity-95' : 'opacity-0'}`}
-                         title={tab.dapp.name} 
-                         onLoad={() => setIframeStatus('loaded')}
-                       />
-                     ) : null}
+                    <iframe 
+                      key={iframeKey}
+                      src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
+                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                      className={`w-full h-full border-none transition-opacity duration-500 ${iframeStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
+                      title={tab.dapp.name} 
+                      onLoad={() => setIframeStatus('loaded')}
+                    />
                   </div>
                 </div>
               ) : tab.type === 'search' ? (
-                 <section className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto pb-20">
-                   <div className="text-center mb-16">
-                      <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-80">SURF RESULTS</h1>
-                      <p className="text-white/40 text-lg font-medium tracking-wide">Secure, private indexed results for <span className="text-indigo-400">"{tab.query}"</span></p>
-                   </div>
-                   
-                   {tab.isSearching ? (
-                     <div className="py-32 flex flex-col items-center">
-                        <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-                        <p className="mt-8 text-white/30 font-bold uppercase tracking-[0.3em]">Querying Networks</p>
+                 <section className="browser-content-area animate-in fade-in duration-500 overflow-y-auto standard-scrollbar pb-20">
+                   <div className="max-w-4xl mx-auto py-12 px-8">
+                     <div className="mb-10">
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400/60 mb-2">Neural Indexed Results</h2>
+                        <h1 className="text-4xl font-black tracking-tighter uppercase italic opacity-90">Results for <span className="text-indigo-400">"{tab.query}"</span></h1>
                      </div>
-                   ) : tab.searchError ? (
-                 <div className="py-20 text-center glass-card rounded-[3rem] p-12">
-                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Shield size={40} className="text-red-400" />
+                     
+                     {tab.isSearching ? (
+                       <div className="py-24 flex flex-col items-center">
+                          <div className="w-12 h-12 border-2 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Querying Peer Nodes</p>
+                       </div>
+                     ) : tab.searchError ? (
+                       <div className="py-16 text-center glass-card rounded-[2.5rem] p-10 border-red-500/10">
+                         <div className="w-16 h-16 bg-red-500/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <ShieldAlert size={32} className="text-red-400/50" />
+                         </div>
+                         <p className="text-lg text-white/60 font-bold mb-6 italic">{tab.searchError}</p>
+                         <button 
+                           onClick={() => executeSearch(tab.query)}
+                           className="px-8 py-3.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 font-black text-[10px] uppercase tracking-widest"
+                         >
+                           Re-Initialize Breach
+                         </button>
+                       </div>
+                     ) : tab.searchResults.length > 0 ? (
+                       <div className="grid grid-cols-1 gap-5">
+                         {tab.searchResults.map((result, idx) => (
+                            <div 
+                               key={idx}
+                               onClick={() => {
+                                 updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' } });
+                               }}
+                               className="group glass-card p-6 rounded-[1.5rem] cursor-pointer hover:border-indigo-500/30"
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                 <div className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                    <Globe size={12} />
+                                 </div>
+                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20 group-hover:text-indigo-400/60 transition-colors">{result.domain}</span>
+                              </div>
+                              <h3 className="text-xl font-black text-white group-hover:text-indigo-400 mb-2 transition-colors tracking-tight leading-tight">{result.title}</h3>
+                              <p className="text-xs text-white/40 leading-relaxed font-bold line-clamp-2" dangerouslySetInnerHTML={{ __html: result.description }} />
+                              
+                              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60">Secure Link Available</span>
+                                 <ChevronRight size={14} className="text-indigo-500" />
+                              </div>
+                            </div>
+                         ))}
+                       </div>
+                     ) : (
+                       <div className="py-24 text-center">
+                         <p className="text-xl font-black text-white/5 italic uppercase tracking-[0.3em]">No Neural Fragments Detected</p>
+                       </div>
+                     )}
                    </div>
-                   <p className="text-xl text-white/80 font-bold mb-8 italic">{tab.searchError || 'Search failed'}</p>
-                   <button 
-                     onClick={() => executeSearch(tab.query)}
-                     className="px-10 py-4 bg-white/5 hover:bg-indigo-600 rounded-2xl transition-all border border-white/10 font-bold"
-                   >
-                     Re-Initialize Search
-                   </button>
-                 </div>
-               ) : tab.searchResults.length > 0 ? (
-                 <div className="grid grid-cols-1 gap-6">
-                   {tab.searchResults.map((result, idx) => (
-                      <div 
-                         key={idx}
-                         onClick={() => {
-                           updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' } });
-                         }}
-                         className="group glass-card p-8 rounded-[2rem] cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center border border-indigo-500/10">
-                            <Globe size={18} className="text-indigo-400 group-hover:rotate-12 transition-transform" />
-                          </div>
-                          <span className="text-xs font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-indigo-400 transition-colors">{result.domain}</span>
-                        </div>
-                        <h3 className="text-2xl font-black text-white group-hover:text-indigo-400 mb-3 transition-colors tracking-tight leading-tight">{result.title}</h3>
-                        <p className="text-base text-white/50 leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: result.description }} />
-                      </div>
-                   ))}
-                 </div>
-               ) : (
-                 <div className="py-32 text-center">
-                   <p className="text-2xl font-black text-white/10 italic select-none uppercase tracking-[0.2em]">SEARCH INTERRUPTED - NO PEERS FOUND</p>
-                 </div>
-               )}
-             </section>
+                 </section>
           ) : tab.type === 'explore' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="relative text-center max-w-3xl mx-auto">
