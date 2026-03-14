@@ -1486,7 +1486,7 @@ function App() {
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tetris Override</h3>
                      <p className="text-sm text-white/40 font-bold mb-8 relative z-10">Classic block stacking. Clear rows, build multiplier, sync points.</p>
                      <button 
-                       onClick={() => setActiveGame('tetris')}
+                       onClick={() => { setActiveGame('tetris'); claimReward('wtf_quest_action', 5); }}
                        className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
                        DEPLOY BLOCKS
@@ -1499,7 +1499,7 @@ function App() {
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Neon Blaster</h3>
                      <p className="text-sm text-white/40 font-bold mb-8 relative z-10">Defend the grid from alien UFOs. Pixel block elements and endless waves.</p>
                      <button 
-                       onClick={() => setActiveGame('space')}
+                       onClick={() => { setActiveGame('space'); claimReward('wtf_quest_action', 5); }}
                        className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
                        LAUNCH SHIP
@@ -1512,7 +1512,7 @@ function App() {
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tic Tac Toe</h3>
                      <p className="text-sm text-white/40 font-bold mb-8 relative z-10">2-player classic showdown. Never settle for a draw. Settle on the chain.</p>
                      <button 
-                       onClick={() => setActiveGame('tictactoe')}
+                       onClick={() => { setActiveGame('tictactoe'); claimReward('wtf_quest_action', 5); }}
                        className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-purple-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
                        START DUEL (2P)
