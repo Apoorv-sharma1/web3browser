@@ -1621,6 +1621,8 @@ function App() {
                 <h3 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-20">Protocol Offline</h3>
                 <p className="font-bold text-white/10 tracking-[0.4em] uppercase text-sm">Awaiting Network Sync</p>
             </div>
+            )}
+            </div>
           ))}
         </div>
       </main>
