@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronRight, ChevronLeft, ChevronUp, ChevronDown, CheckCircle, Target, Crosshair, Star } from 'lucide-react';
+import { ChevronRight, ChevronLeft, ChevronUp, ChevronDown, CheckCircle, Target, Crosshair, Star, Terminal, LayoutGrid, Rocket, Gamepad2 } from 'lucide-react';
 
 // --- SNAKE GAME ---
 export function SnakeGame({ onExit, onScore }) {
@@ -82,7 +82,7 @@ export function SnakeGame({ onExit, onScore }) {
         <div className="flex w-full items-center justify-between mb-8">
           <div>
             <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white flex items-center gap-3">
-              <span className="text-red-500">ðŸ  </span> SNAKE
+              <Terminal size={36} className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" /> SNAKE
             </h2>
           </div>
           <div className="text-right">
@@ -91,7 +91,8 @@ export function SnakeGame({ onExit, onScore }) {
           </div>
         </div>
 
-        <div className="aspect-square w-[350px] bg-black/60 rounded-[1rem] border border-white/10 relative mb-8 grid grid-cols-[repeat(20,minmax(0,1fr))] grid-rows-[repeat(20,minmax(0,1fr))] p-2 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
+        <div className="aspect-square w-[350px] bg-[#050508]/80 rounded-[1rem] border border-white/10 relative mb-8 grid grid-cols-[repeat(20,minmax(0,1fr))] grid-rows-[repeat(20,minmax(0,1fr))] p-2 shadow-[0_0_40px_rgba(239,68,68,0.15)] overflow-hidden"
+             style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '17.5px 17.5px' }}>
            {gameOver ? (
              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10 rounded-xl">
                 <h3 className="text-3xl font-black uppercase italic mb-2 text-red-500">GAME OVER</h3>
@@ -110,9 +111,9 @@ export function SnakeGame({ onExit, onScore }) {
            {!gameOver && (
              <>
                {snake.map((s, i) => (
-                 <div key={i} style={{ gridColumnStart: s[1] + 1, gridRowStart: s[0] + 1 }} className={`w-full h-full rounded-sm ${i === 0 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] z-10 scale-110' : 'bg-red-500/60'}`}></div>
+                 <div key={i} style={{ gridColumnStart: s[1] + 1, gridRowStart: s[0] + 1 }} className={`w-full h-full rounded-[2px] transition-all duration-75 ${i === 0 ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] z-10 scale-125' : 'bg-gradient-to-br from-red-500/80 to-orange-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)] scale-90'}`}></div>
                ))}
-               <div style={{ gridColumnStart: food[1] + 1, gridRowStart: food[0] + 1 }} className="w-full h-full bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse scale-75"></div>
+               <div style={{ gridColumnStart: food[1] + 1, gridRowStart: food[0] + 1 }} className="w-full h-full bg-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,1)] animate-pulse scale-[0.6]"></div>
              </>
            )}
         </div>
@@ -135,13 +136,13 @@ export function SnakeGame({ onExit, onScore }) {
 // --- TETRIS GAME ---
 const TETROMINOS = {
   0: { shape: [[0]], color: 'bg-transparent' },
-  I: { shape: [[0, 'I', 0, 0], [0, 'I', 0, 0], [0, 'I', 0, 0], [0, 'I', 0, 0]], color: 'bg-cyan-500' },
-  J: { shape: [[0, 'J', 0], [0, 'J', 0], ['J', 'J', 0]], color: 'bg-blue-500' },
-  L: { shape: [[0, 'L', 0], [0, 'L', 0], [0, 'L', 'L']], color: 'bg-orange-500' },
-  O: { shape: [['O', 'O'], ['O', 'O']], color: 'bg-yellow-400' },
-  S: { shape: [[0, 'S', 'S'], ['S', 'S', 0], [0, 0, 0]], color: 'bg-green-500' },
-  T: { shape: [[0, 0, 0], ['T', 'T', 'T'], [0, 'T', 0]], color: 'bg-purple-500' },
-  Z: { shape: [['Z', 'Z', 0], [0, 'Z', 'Z'], [0, 0, 0]], color: 'bg-red-500' }
+  I: { shape: [[0, 'I', 0, 0], [0, 'I', 0, 0], [0, 'I', 0, 0], [0, 'I', 0, 0]], color: 'bg-gradient-to-br from-cyan-400 to-blue-500 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  J: { shape: [[0, 'J', 0], [0, 'J', 0], ['J', 'J', 0]], color: 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  L: { shape: [[0, 'L', 0], [0, 'L', 0], [0, 'L', 'L']], color: 'bg-gradient-to-br from-orange-400 to-red-500 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  O: { shape: [['O', 'O'], ['O', 'O']], color: 'bg-gradient-to-br from-yellow-300 to-amber-500 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  S: { shape: [[0, 'S', 'S'], ['S', 'S', 0], [0, 0, 0]], color: 'bg-gradient-to-br from-green-400 to-emerald-600 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  T: { shape: [[0, 0, 0], ['T', 'T', 'T'], [0, 'T', 0]], color: 'bg-gradient-to-br from-purple-400 to-fuchsia-600 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' },
+  Z: { shape: [['Z', 'Z', 0], [0, 'Z', 'Z'], [0, 0, 0]], color: 'bg-gradient-to-br from-red-400 to-rose-600 shadow-[inset_0_0_8px_rgba(255,255,255,0.4)]' }
 };
 
 const randomTetromino = () => {
@@ -309,7 +310,7 @@ export function TetrisGame({ onExit, onScore }) {
         
         {/* Play Area */}
         <div className="flex-1 flex justify-center items-center">
-            <div className="w-[200px] h-[400px] bg-[#111] grid grid-rows-20 grid-cols-10 gap-0.5 border-2 border-white/10 p-0.5 relative rounded-lg overflow-hidden">
+            <div className="w-[200px] h-[400px] bg-[#050608]/90 grid grid-rows-20 grid-cols-10 gap-0.5 border border-blue-500/30 p-1 relative rounded-xl overflow-hidden shadow-[0_0_40px_rgba(59,130,246,0.15)]">
                 {gameOver && (
                   <div className="absolute inset-0 z-10 bg-black/80 flex flex-col items-center justify-center backdrop-blur-sm">
                     <p className="font-black text-2xl text-red-500 mb-2">GAME OVER</p>
@@ -322,7 +323,7 @@ export function TetrisGame({ onExit, onScore }) {
                   </div>
                 )}
                 {stage.map(row => row.map((cell, x) => (
-                    <div key={Math.random()} className={`w-full h-full rounded-sm ${cell[0] === 0 ? 'bg-white/5' : TETROMINOS[cell[0]].color}`}></div>
+                    <div key={Math.random()} className={`w-full h-full rounded-[2px] transition-all duration-75 ${cell[0] === 0 ? 'bg-white/[0.02]' : TETROMINOS[cell[0]].color}`}></div>
                 )))}
             </div>
         </div>
@@ -330,7 +331,7 @@ export function TetrisGame({ onExit, onScore }) {
         {/* Sidebar */}
         <div className="w-1/3 flex flex-col items-center justify-between py-10">
           <div className="text-center w-full">
-             <h2 className="text-4xl font-black uppercase italic text-blue-400 tracking-tighter mb-4">TETRIS</h2>
+             <h2 className="text-4xl font-black uppercase italic text-blue-400 tracking-tighter mb-4 flex justify-center items-center gap-2 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"><LayoutGrid size={32} /> TETRIS</h2>
              <div className="glass p-4 rounded-xl border-white/10 w-full mb-4 text-center">
                <p className="text-[10px] uppercase text-white/50 tracking-widest font-bold mb-1">Score</p>
                <p className="text-3xl font-black text-white">{score}</p>
@@ -430,7 +431,7 @@ export function SpaceBlasterGame({ onExit, onScore }) {
                
                <div className="flex justify-between items-center mb-6">
                    <div>
-                       <h2 className="text-3xl font-black uppercase tracking-tighter text-cyan-400 italic">NEON BLASTER</h2>
+                       <h2 className="text-3xl font-black uppercase tracking-tighter text-cyan-400 italic flex items-center gap-3 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"><Rocket size={28} /> NEON BLASTER</h2>
                        <p className="text-[10px] text-white/50 uppercase tracking-widest">Defend the grid</p>
                    </div>
                    <div className="text-right">
@@ -461,25 +462,22 @@ export function SpaceBlasterGame({ onExit, onScore }) {
                        </div>
                    )}
 
-                   {/* Player */}
                    {started && !gameOver && (
-                       <div className="absolute bottom-[10%] w-8 h-8 -translate-x-1/2 transition-all duration-75" style={{left: `${player.x}%`}}>
-                           <div className="w-full h-full text-cyan-400">
-                               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5H5.5L12 6.5z"/></svg>
-                           </div>
-                           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-2 h-4 bg-orange-500 blur-sm rounded-full animate-pulse"></div>
+                       <div className="absolute bottom-[10%] w-10 h-10 -translate-x-1/2 transition-all duration-75 flex items-center justify-center text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]" style={{left: `${player.x}%`}}>
+                           <Rocket size={32} />
+                           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3 h-6 bg-orange-500 blur-md rounded-full animate-pulse"></div>
                        </div>
                    )}
 
                    {/* Lasers */}
                    {lasers.map(l => (
-                       <div key={l.id} className="absolute w-1 h-6 bg-cyan-300 rounded-full shadow-[0_0_8px_rgba(103,232,249,1)] -translate-x-1/2" style={{left: `${l.x}%`, top: `${l.y}%`}}></div>
+                       <div key={l.id} className="absolute w-1.5 h-6 bg-white rounded-full shadow-[0_0_15px_rgba(103,232,249,1),0_0_30px_rgba(103,232,249,0.8)] -translate-x-1/2" style={{left: `${l.x}%`, top: `${l.y}%`, backgroundColor: '#a5f3fc'}}></div>
                    ))}
 
                    {/* Enemies */}
                    {enemies.map(e => (
-                       <div key={e.id} className="absolute w-8 h-8 text-fuchsia-500 -translate-x-1/2 -translate-y-1/2" style={{left: `${e.x}%`, top: `${e.y}%`}}>
-                           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10zm-2 0c0-4.418-3.582-8-8-8s-8 3.582-8 8 3.582 8 8 8 8-3.582 8-8zm-9-4h2v6h-2V8zm0 8h2v2h-2v-2z"/></svg>
+                       <div key={e.id} className="absolute w-8 h-8 text-fuchsia-500 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_15px_rgba(217,70,239,0.8)] animate-pulse" style={{left: `${e.x}%`, top: `${e.y}%`}}>
+                           <Target size={32} />
                        </div>
                    ))}
                </div>
@@ -533,10 +531,10 @@ export function TicTacToe({ onExit, onScore }) {
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-500 px-6">
             <div className="glass-card max-w-lg w-full p-10 rounded-[4rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-purple-900/10 to-transparent flex flex-col items-center shadow-[0_0_60px_rgba(168,85,247,0.1)]">
-                <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">NEVER <span className="text-purple-400">SETTLE</span></h2>
+                <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 flex items-center gap-3 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"><Gamepad2 size={28} className="text-purple-400"/> NEVER <span className="text-purple-400">SETTLE</span></h2>
                 <div className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-8 bg-white/5 px-4 py-1.5 rounded-full border border-white/10">Player {xIsNext ? 'X' : 'O'} Turn</div>
 
-                <div className="w-[300px] h-[300px] grid grid-cols-3 grid-rows-3 gap-2 bg-white/5 p-2 rounded-2xl mb-8 relative">
+                <div className="w-[300px] h-[300px] grid grid-cols-3 grid-rows-3 gap-3 bg-white/5 p-3 rounded-3xl mb-8 relative shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]">
                     {winner && (
                         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 rounded-2xl backdrop-blur-sm animate-in fade-in">
                             <h3 className="text-4xl font-black uppercase text-purple-400 italic bg-clip-text mb-4">
@@ -548,9 +546,10 @@ export function TicTacToe({ onExit, onScore }) {
                     )}
                     {board.map((cell, idx) => (
                         <div key={idx} onClick={() => handleClick(idx)} 
-                             className="bg-[#0a0c0f] rounded-xl flex items-center justify-center text-5xl font-black cursor-pointer hover:bg-[#12141a] transition-colors shadow-inner border border-white/5 select-none"
-                             style={{ color: cell === 'X' ? '#a855f7' : cell === 'O' ? '#06b6d4' : 'transparent' }}>
-                            {cell}
+                             className="bg-[#050608]/80 rounded-2xl flex items-center justify-center text-6xl font-black cursor-pointer hover:bg-[#12141a] hover:scale-[1.02] transition-all shadow-inner border border-white/5 select-none relative overflow-hidden"
+                             style={{ color: cell === 'X' ? '#a855f7' : cell === 'O' ? '#06b6d4' : 'transparent', textShadow: cell ? `0 0 20px ${cell === 'X' ? 'rgba(168,85,247,0.8)' : 'rgba(6,182,212,0.8)'}` : 'none' }}>
+                            {cell && <div className={`absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,${cell === 'X' ? '#a855f7' : '#06b6d4'},transparent)]`}></div>}
+                            <span className="relative z-10">{cell}</span>
                         </div>
                     ))}
                 </div>

@@ -38,7 +38,11 @@ import {
   RefreshCw,
   Star,
   ArrowUpRight,
-  Copy
+  Copy,
+  Terminal,
+  LayoutGrid,
+  Rocket,
+  Gamepad2
 } from 'lucide-react';
 import { SnakeGame, TetrisGame, SpaceBlasterGame, TicTacToe } from './components/Games';
 
@@ -1309,51 +1313,55 @@ function App() {
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-red-500/20 transition-all cursor-pointer bg-gradient-to-br from-red-500/5 to-transparent flex flex-col items-center text-center">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-red-500 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸ  </div>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-red-500/50 hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] transition-all cursor-pointer bg-gradient-to-br from-red-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden">
+                     <div className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/5 transition-colors duration-500"></div>
+                     <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-red-400 mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 shadow-lg group-hover:shadow-red-500/30 relative z-10"><Terminal size={36} className="group-hover:animate-pulse" /></div>
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Snake Terminal</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Navigate the neural grid. Collect fragments to earn points. Keyboard optimized.</p>
+                     <p className="text-sm text-white/40 font-bold mb-8 relative z-10">Navigate the neural grid. Collect fragments to earn points. Keyboard optimized.</p>
                      <button 
                        onClick={() => setActiveGame('snake')}
-                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-red-500 group-hover:text-white transition-all"
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-red-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
-                       PLAY & EARN
+                       INITIATE SEQUENCE
                      </button>
                   </div>
 
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-blue-500/20 transition-all cursor-pointer bg-gradient-to-br from-blue-500/5 to-transparent flex flex-col items-center text-center">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸ§©</div>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all cursor-pointer bg-gradient-to-br from-blue-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden">
+                     <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-500"></div>
+                     <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 shadow-lg group-hover:shadow-blue-500/30 relative z-10"><LayoutGrid size={36} /></div>
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tetris Override</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Classic block stacking. Clear rows, build multiplier, sync points.</p>
+                     <p className="text-sm text-white/40 font-bold mb-8 relative z-10">Classic block stacking. Clear rows, build multiplier, sync points.</p>
                      <button 
                        onClick={() => setActiveGame('tetris')}
-                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-blue-500 group-hover:text-white transition-all"
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
-                       PLAY & EARN
+                       DEPLOY BLOCKS
                      </button>
                   </div>
 
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-cyan-500/20 transition-all cursor-pointer bg-gradient-to-br from-cyan-500/5 to-transparent flex flex-col items-center text-center">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸš€</div>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] transition-all cursor-pointer bg-gradient-to-br from-cyan-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden">
+                     <div className="absolute inset-0 bg-cyan-500/0 group-hover:bg-cyan-500/5 transition-colors duration-500"></div>
+                     <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 shadow-lg group-hover:shadow-cyan-500/30 relative z-10"><Rocket size={36} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /></div>
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Neon Blaster</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Defend the grid from alien UFOs. Pixel block elements and endless waves.</p>
+                     <p className="text-sm text-white/40 font-bold mb-8 relative z-10">Defend the grid from alien UFOs. Pixel block elements and endless waves.</p>
                      <button 
                        onClick={() => setActiveGame('space')}
-                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-cyan-500 group-hover:text-white transition-all"
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
-                       PLAY & EARN
+                       LAUNCH SHIP
                      </button>
                   </div>
 
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-purple-500/20 transition-all cursor-pointer bg-gradient-to-br from-purple-500/5 to-transparent flex flex-col items-center text-center">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 transition-all text-3xl">â Œ</div>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] transition-all cursor-pointer bg-gradient-to-br from-purple-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden">
+                     <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/5 transition-colors duration-500"></div>
+                     <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 shadow-lg group-hover:shadow-purple-500/30 relative z-10"><Gamepad2 size={36} /></div>
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tic Tac Toe</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">2-player classic showdown. Never settle for a draw. Settle on the chain.</p>
+                     <p className="text-sm text-white/40 font-bold mb-8 relative z-10">2-player classic showdown. Never settle for a draw. Settle on the chain.</p>
                      <button 
                        onClick={() => setActiveGame('tictactoe')}
-                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-purple-500 group-hover:text-white transition-all"
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-purple-500 group-hover:text-white transition-all shadow-lg active:scale-95 relative z-10"
                      >
-                       PLAY & EARN (2P)
+                       START DUEL (2P)
                      </button>
                   </div>
                </div>
