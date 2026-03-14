@@ -73,6 +73,13 @@ const DAPPS = [
   { id: 30, name: 'DeFi Llama', url: 'https://defillama.com', icon: '🦙', category: 'Analytics', description: 'DeFi TVL and protocol data' }
 ];
 
+const HLUSD_CONTRACT = '0xBE75FDe9DeDe700635E3dDBe7e29b5db1A76C125';
+const ERC20_ABI = [
+  'function balanceOf(address owner) view returns (uint256)',
+  'function transfer(address to, uint amount) returns (bool)',
+  'function decimals() view returns (uint8)'
+];
+
 const API_URL = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== 'https://your-backend-url.vercel.app' 
   ? import.meta.env.VITE_API_URL 
   : 'https://web3browser-backend.vercel.app';
@@ -80,6 +87,7 @@ const API_URL = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !==
 function App() {
   const [walletAddress, setWalletAddress] = useState('');
   const [balance, setBalance] = useState('0.00');
+  const [hlusdBalance, setHlusdBalance] = useState('0.00');
   const [points, setPoints] = useState(0);
   const [dappList, setDappList] = useState(DAPPS);
   const [helaBalance, setHelaBalance] = useState('0.00');
@@ -97,6 +105,11 @@ function App() {
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [activeWalletTab, setActiveWalletTab] = useState('assets');
+  const [sendRecipient, setSendRecipient] = useState('');
+  const [sendAmount, setSendAmount] = useState('');
+  const [isTxPending, setIsTxPending] = useState(false);
   const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
   
   // Browser Tab System
@@ -368,8 +381,34 @@ function App() {
     }
   };
 
+
+  const fetchHLUSDBalance = async (address) => {
+    if (!window.ethereum || !address) return;
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(HLUSD_CONTRACT, ERC20_ABI, provider);
+      const bal = await contract.balanceOf(address);
+      setHlusdBalance(ethers.formatUnits(bal, 18));
+    } catch (e) {
+      console.error('Failed to fetch HLUSD balance', e);
+    }
+  };
+
+  const sendHLUSD = async (to, amount) => {
+    if (!window.ethereum || !walletAddress) return;
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(HLUSD_CONTRACT, ERC20_ABI, signer);
+      const tx = await contract.transfer(to, ethers.parseUnits(amount, 18));
+      return tx;
+    } catch (e) {
+      console.error('Send HLUSD failed', e);
+      throw e;
+    }
+  };
+
   const connectWallet = async () => {
-    // ...existing connectWallet logic...
     if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
@@ -379,6 +418,9 @@ function App() {
         
         const balance = await provider.getBalance(address);
         setBalance(ethers.formatEther(balance).substring(0, 6));
+
+        // Fetch HLUSD Balance
+        await fetchHLUSDBalance(address);
 
         // Register/Login with Backend
         fetch(`${API_URL}/users/register`, {
@@ -402,9 +444,9 @@ function App() {
           .then(res => res.json())
           .then(data => {
             const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
-            const totalHela = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
+            const totalHelaReward = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
             setPoints(totalPoints);
-            setHelaBalance(totalHela.toFixed(2));
+            setHelaBalance(totalHelaReward.toFixed(2));
           });
 
       } catch (err) {
@@ -775,7 +817,14 @@ function App() {
             </div>
             
             <button 
-              onClick={connectWallet}
+              onClick={() => {
+                if (walletAddress) {
+                   fetchHLUSDBalance(walletAddress);
+                   setShowWalletModal(true);
+                } else {
+                   connectWallet();
+                }
+              }}
               className="group relative flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-7 py-3.5 rounded-2xl transition-all shadow-xl shadow-indigo-600/30 font-bold active:scale-95"
             >
               <Wallet size={20} className="group-hover:rotate-12 transition-transform" />
@@ -1626,6 +1675,139 @@ function App() {
           ))}
         </div>
       </main>
+
+      {/* Wallet Modal */}
+      {showWalletModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+          <div className="glass-card max-w-lg w-full p-8 rounded-[3rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent shadow-[0_0_100px_rgba(99,102,241,0.1)]">
+            <div className="flex justify-between items-center mb-8">
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
+                    <Wallet size={20} />
+                  </div>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter italic">BUILT-IN <span className="text-indigo-400">WALLET</span></h2>
+               </div>
+               <button onClick={() => setShowWalletModal(false)} className="w-10 h-10 flex items-center justify-center glass rounded-full hover:bg-white/10 transition-all text-white/50"><X size={18} /></button>
+            </div>
+
+            {/* Wallet Tabs */}
+            <div className="flex gap-2 p-1.5 glass rounded-2xl mb-8 border-white/5">
+               {['assets', 'send', 'receive'].map(tab => (
+                 <button 
+                  key={tab}
+                  onClick={() => setActiveWalletTab(tab)}
+                  className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeWalletTab === tab ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-white/30 hover:bg-white/5'}`}
+                 >
+                   {tab}
+                 </button>
+               ))}
+            </div>
+
+            <div className="min-h-[300px] flex flex-col">
+               {activeWalletTab === 'assets' && (
+                 <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl relative">
+                       <CreditCard size={40} className="text-white" />
+                       <div className="absolute -top-2 -right-2 bg-emerald-400 w-6 h-6 rounded-full border-4 border-[#07090c] shadow-glow" />
+                    </div>
+                    <div className="text-center">
+                       <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Available Balance</div>
+                       <div className="text-5xl font-black text-white tracking-tighter mb-2">{parseFloat(hlusdBalance).toFixed(4)}</div>
+                       <div className="text-xl font-bold text-indigo-400 tracking-widest uppercase">HLUSD</div>
+                       <div className="mt-8 flex flex-col gap-2">
+                          <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Connected via MetaMask</div>
+                          <div className="text-xs font-mono text-white/40 bg-white/5 px-4 py-2 rounded-xl border border-white/5">{truncateAddress(walletAddress)}</div>
+                       </div>
+                    </div>
+                 </div>
+               )}
+
+               {activeWalletTab === 'send' && (
+                 <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="space-y-6">
+                       <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-3 block">Recipient Address</label>
+                          <input 
+                            type="text" 
+                            value={sendRecipient}
+                            onChange={(e) => setSendRecipient(e.target.value)}
+                            placeholder="0x..." 
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40" 
+                          />
+                       </div>
+                       <div>
+                          <div className="flex justify-between mb-3">
+                             <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Amount (HLUSD)</label>
+                             <button onClick={() => setSendAmount(hlusdBalance)} className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white">Max: {parseFloat(hlusdBalance).toFixed(2)}</button>
+                          </div>
+                          <div className="relative">
+                             <input 
+                               type="number" 
+                               value={sendAmount}
+                               onChange={(e) => setSendAmount(e.target.value)}
+                               placeholder="0.00" 
+                               className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-lg font-black text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 tabular-nums" 
+                             />
+                             <div className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-black text-indigo-400">HLUSD</div>
+                          </div>
+                       </div>
+                       <button 
+                        onClick={async () => {
+                          if (!sendRecipient || !sendAmount) return alert('Enter recipient and amount.');
+                          setIsTxPending(true);
+                          try {
+                            const tx = await sendHLUSD(sendRecipient, sendAmount);
+                            alert(`Transaction Broadcast: ${tx.hash}`);
+                            setSendAmount('');
+                            setSendRecipient('');
+                            await fetchHLUSDBalance(walletAddress);
+                          } catch (e) {
+                            alert('Transaction failed or rejected.');
+                          } finally {
+                            setIsTxPending(false);
+                          }
+                        }}
+                        disabled={isTxPending || !sendRecipient || !sendAmount}
+                        className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3"
+                       >
+                         {isTxPending ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <><ArrowUpRight size={20} /> INITIATE TRANSFER</>}
+                       </button>
+                    </div>
+                 </div>
+               )}
+
+               {activeWalletTab === 'receive' && (
+                 <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="w-48 h-48 p-4 glass rounded-[2.5rem] bg-white flex items-center justify-center mb-8 relative">
+                       {/* Mock QR Code */}
+                       <div className="w-full h-full bg-slate-100 rounded-2xl flex flex-wrap p-2 gap-1 overflow-hidden opacity-10">
+                          {Array.from({length: 100}).map((_, i) => (
+                            <div key={i} className={`w-3 h-3 rounded-sm ${Math.random() > 0.5 ? 'bg-black' : 'bg-transparent'}`} />
+                          ))}
+                       </div>
+                       <div className="absolute inset-0 flex items-center justify-center">
+                          <Download size={48} className="text-indigo-600/20" />
+                       </div>
+                    </div>
+                    <div className="text-center w-full">
+                       <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Your Receive Address</div>
+                       <div className="flex items-center gap-2 bg-black/40 p-4 rounded-2xl border border-white/5 break-all font-mono text-xs text-indigo-200">
+                          {walletAddress}
+                          <button 
+                           onClick={() => { navigator.clipboard.writeText(walletAddress); alert('Address copied to neural link.'); }}
+                           className="shrink-0 w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all active:scale-90"
+                          >
+                             <Copy size={16} />
+                          </button>
+                       </div>
+                       <p className="mt-6 text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Only send HLUSD (Hela Testnet) to this address. <br/>Other assets may be lost in the void.</p>
+                    </div>
+                 </div>
+               )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Redeem Modal */}
       {showRedeemModal && (
