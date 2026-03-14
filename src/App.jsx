@@ -25,7 +25,11 @@ import {
   Layers,
   Activity,
   LogOut,
-  Edit3
+  Edit3,
+  ShieldCheck,
+  Lock,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 
 // Mock dApps Data
@@ -831,6 +835,55 @@ function App() {
                     url="https://www.friend.tech/"
                     onLearnMore={(url) => setActiveDApp({ id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' })}
                   />
+                </div>
+              </div>
+
+              {/* Security Protocol Section */}
+              <div className="space-y-10 pt-10">
+                <div className="flex items-center gap-4 border-l-4 border-red-500 pl-6">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Security Protocol</h2>
+                  <div className="text-[10px] font-black uppercase text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-500/20">Critical Shield</div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <EduCard 
+                    title="Privacy Protection" 
+                    description="Our browser automatically neutralizes ads, trackers, and malicious scripts, ensuring your decentralized journey remains private and invisible to data harvesters."
+                    icon={<ShieldCheck size={24} className="text-red-400" />}
+                    tag="Active Defense"
+                  />
+                  <EduCard 
+                    title="Wallet Security" 
+                    description="Safely manage connections with MetaMask or WalletConnect. View balances and networks while maintaining 100% sovereignty over your private keys."
+                    icon={<Lock size={24} className="text-blue-400" />}
+                    tag="Key Protection"
+                  />
+                  <EduCard 
+                    title="dApp Safety Check" 
+                    description="Every protocol is scanned for known vulnerabilities. Our system provides instant status indicators: Verified, Unknown, or Warning."
+                    icon={<Activity size={24} className="text-emerald-400" />}
+                    tag="Verification"
+                  />
+                  <EduCard 
+                    title="Smart Contract Alerts" 
+                    description="Receive instant alerts when a dApp requests wallet or token permissions. Always review the scope of access before approving any transaction."
+                    icon={<AlertTriangle size={24} className="text-yellow-400" />}
+                    tag="Guardianship"
+                  />
+                  <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
+                        <CheckCircle size={24} className="text-red-400" />
+                      </div>
+                      <h3 className="text-xl font-black tracking-tight uppercase">Safety Manifesto</h3>
+                    </div>
+                    <ul className="space-y-3 text-sm font-medium text-white/50">
+                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Never share your seed phrase or private keys.</li>
+                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Verify website URLs before connecting your wallet.</li>
+                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Avoid suspicious or unknown decentralized apps.</li>
+                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Review smart contract permissions carefully.</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
