@@ -106,6 +106,113 @@ function App() {
   const [isWalletGateOpen, setIsWalletGateOpen] = useState(true);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [iframeKey, setIframeKey] = useState(0); // For forcing iframe reloads
+
+  // UI States for Rewards
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isQuesting, setIsQuesting] = useState(false);
+  const [isReferring, setIsReferring] = useState(false);
+  const [isCashbacking, setIsCashbacking] = useState(false);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [redeemAmount, setRedeemAmount] = useState(1000);
+
+  // New Modals
+  const [showQuestModal, setShowQuestModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [activeWalletTab, setActiveWalletTab] = useState('assets');
+  const [sendRecipient, setSendRecipient] = useState('');
+  const [sendAmount, setSendAmount] = useState('');
+  const [isTxPending, setIsTxPending] = useState(false);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
+
+  // Browser Tab System
+  const [tabs, setTabs] = useState([
+    { 
+      id: 'tab-1', 
+      type: 'explore', 
+      url: '', 
+      name: 'New Tab', 
+      icon: '🌐', 
+      history: [], 
+      historyIndex: -1, 
+      isBookmarked: false,
+      query: '',
+      dapp: null,
+      searchResults: [],
+      isSearching: false,
+      searchError: null
+    }
+  ]);
+  const [activeTabId, setActiveTabId] = useState('tab-1');
+  
+  // Helper to get active tab
+  const activeTabObj = tabs.find(t => t.id === activeTabId) || tabs[0] || { type: 'explore', history: [], historyIndex: -1 };
+
+  const [iframeStatus, setIframeStatus] = useState('loading');
+
+  // Quest States
+  const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
+  const [completedQuests, setCompletedQuests] = useState(() => {
+    try {
+      const saved = localStorage.getItem('completed_quests');
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (parsed.date !== new Date().toDateString()) return [];
+      return parsed.quests || [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [articleTimer, setArticleTimer] = useState(0);
+
+  // Profile & Accounts State
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('web3_profile');
+      return saved ? JSON.parse(saved) : { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
+    } catch (e) {
+      console.error('Error parsing userProfile', e);
+      return { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
+    }
+  });
+
+  const [accounts, setAccounts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('web3_accounts');
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
+    } catch (e) {
+      console.error('Error parsing accounts', e);
+      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
+    }
+  });
+
+  const [activeProfileId, setActiveProfileId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('active_profile_id');
+      const id = saved ? parseInt(saved) : 1;
+      return isNaN(id) ? 1 : id;
+    } catch (e) {
+      return 1;
+    }
+  });
+
+  const [activeProfileName, setActiveProfileName] = useState(() => {
+    try {
+      const active = (accounts || []).find(a => a.id === activeProfileId);
+      return active ? active.name : 'Primary Core';
+    } catch (e) {
+      return 'Primary Core';
+    }
+  });
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activeGame, setActiveGame] = useState(null);
   
   // Wallet Persistence & Auto-Reconnection
   useEffect(() => {
@@ -163,26 +270,7 @@ function App() {
     return () => clearInterval(interval);
   }, [walletAddress]);
   
-  // UI States for Rewards
-  const [isRedeeming, setIsRedeeming] = useState(false);
-  const [isQuesting, setIsQuesting] = useState(false);
-  const [isReferring, setIsReferring] = useState(false);
-  const [isCashbacking, setIsCashbacking] = useState(false);
-  const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [redeemAmount, setRedeemAmount] = useState(1000);
 
-  // New Modals
-  const [showQuestModal, setShowQuestModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showVoucherModal, setShowVoucherModal] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [activeWalletTab, setActiveWalletTab] = useState('assets');
-  const [sendRecipient, setSendRecipient] = useState('');
-  const [sendAmount, setSendAmount] = useState('');
-  const [isTxPending, setIsTxPending] = useState(false);
-  const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState(Date.now());
-  const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
 
   // Sync balance and network periodically
   useEffect(() => {
@@ -223,28 +311,7 @@ function App() {
     }
   }, [walletAddress, showWalletModal]);
 
-  // Browser Tab System
-  const [tabs, setTabs] = useState([
-    { 
-      id: 'tab-1', 
-      type: 'explore', 
-      url: '', 
-      name: 'New Tab', 
-      icon: '🌐', 
-      history: [], 
-      historyIndex: -1, 
-      isBookmarked: false,
-      query: '',
-      dapp: null,
-      searchResults: [],
-      isSearching: false,
-      searchError: null
-    }
-  ]);
-  const [activeTabId, setActiveTabId] = useState('tab-1');
   
-  // Helper to get active tab
-  const activeTabObj = tabs.find(t => t.id === activeTabId) || tabs[0] || { type: 'explore', history: [], historyIndex: -1 };
   
   // Refactored helper to update active tab
   const updateActiveTab = (updates) => {
@@ -307,64 +374,6 @@ function App() {
     }
   };
 
-  const [iframeStatus, setIframeStatus] = useState('loading');
-
-  // Quest States
-  const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
-  const [completedQuests, setCompletedQuests] = useState(() => {
-    const saved = localStorage.getItem('completed_quests');
-    if (!saved) return [];
-    const { date, quests } = JSON.parse(saved);
-    if (date !== new Date().toDateString()) return [];
-    return quests;
-  });
-  const [articleTimer, setArticleTimer] = useState(0);
-
-  // Profile & Accounts State
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('web3_profile');
-      return saved ? JSON.parse(saved) : { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
-    } catch (e) {
-      console.error('Error parsing userProfile', e);
-      return { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
-    }
-  });
-
-  const [accounts, setAccounts] = useState(() => {
-    try {
-      const saved = localStorage.getItem('web3_accounts');
-      const parsed = saved ? JSON.parse(saved) : null;
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
-    } catch (e) {
-      console.error('Error parsing accounts', e);
-      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
-    }
-  });
-
-  const [activeProfileId, setActiveProfileId] = useState(() => {
-    try {
-      const saved = localStorage.getItem('active_profile_id');
-      const id = saved ? parseInt(saved) : 1;
-      return isNaN(id) ? 1 : id;
-    } catch (e) {
-      return 1;
-    }
-  });
-
-  const [activeProfileName, setActiveProfileName] = useState(() => {
-    try {
-      const active = (accounts || []).find(a => a.id === activeProfileId);
-      return active ? active.name : 'Primary Core';
-    } catch (e) {
-      return 'Primary Core';
-    }
-  });
-
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [activeGame, setActiveGame] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('web3_profile', JSON.stringify(userProfile));
@@ -912,7 +921,7 @@ function App() {
 
         {/* Tab Bar */}
         <div className="h-12 bg-[#0a0c0f] border-b border-white/5 flex items-center px-4 gap-2 overflow-x-auto no-scrollbar relative z-40">
-          {tabs.map((tab) => (
+          {(Array.isArray(tabs) ? tabs : []).map((tab) => (
             <div 
               key={tab.id}
               onClick={() => setActiveTabId(tab.id)}
@@ -1028,7 +1037,7 @@ function App() {
               {showSuggestions && activeTabObj.query && activeTabObj.query.trim().length > 0 && (
                 <div className="absolute top-16 left-0 w-full glass rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden z-50 border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex flex-col">
-                    {suggestions.map((suggestion, index) => (
+                    {(Array.isArray(suggestions) ? suggestions : []).map((suggestion, index) => (
                     <div 
                       key={index}
                       className="px-6 py-4 hover:bg-white/5 cursor-pointer flex items-center gap-5 transition-colors border-b border-white/5 last:border-0"
@@ -1095,7 +1104,7 @@ function App() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar relative z-10">
-          {tabs.map(tab => (
+          {(Array.isArray(tabs) ? tabs : []).map(tab => (
             <div key={tab.id} className={tab.id === activeTabId ? "block h-full" : "hidden"}>
               {tab.dapp ? (
                 <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -1501,7 +1510,7 @@ function App() {
                             <p className="text-sm font-bold text-white/20 uppercase tracking-widest">No recent neural fragments detected.</p>
                          </div>
                       ) : (
-                         rewardHistory.filter(r => r && r.points > 0).slice(0, 10).map((reward, i) => {
+                         (Array.isArray(rewardHistory) ? rewardHistory : []).filter(r => r && r.points > 0).slice(0, 10).map((reward, i) => {
                             const typeMap = {
                                'dapp_interaction': { label: 'Explorer Access', icon: <Globe size={14}/>, color: 'text-indigo-400' },
                                'login': { label: 'Chain Login', icon: <Lock size={14}/>, color: 'text-emerald-400' },
