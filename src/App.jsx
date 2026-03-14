@@ -846,7 +846,10 @@ function App() {
                        Blockchain technology is the foundation of Web3. It creates a digital environment where users can interact, trade, and build without permission from central authorities.
                     </p>
                     <div className="flex gap-6">
-                       <button className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95">
+                       <button 
+                         onClick={() => setActiveDApp({ id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '🌐', category: 'Education' })}
+                         className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95"
+                       >
                           START JOURNEY
                        </button>
                     </div>
