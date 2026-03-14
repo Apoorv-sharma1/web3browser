@@ -230,7 +230,7 @@ function App() {
       type: 'explore', 
       url: '', 
       name: 'New Tab', 
-      icon: 'ðŸŒ', 
+      icon: '🌐', 
       history: [], 
       historyIndex: -1, 
       isBookmarked: false,
@@ -244,7 +244,7 @@ function App() {
   const [activeTabId, setActiveTabId] = useState('tab-1');
   
   // Helper to get active tab
-  const activeTabObj = tabs.find(t => t.id === activeTabId) || tabs[0];
+  const activeTabObj = tabs.find(t => t.id === activeTabId) || tabs[0] || { type: 'explore', history: [], historyIndex: -1 };
   
   // Refactored helper to update active tab
   const updateActiveTab = (updates) => {
@@ -322,23 +322,44 @@ function App() {
 
   // Profile & Accounts State
   const [userProfile, setUserProfile] = useState(() => {
-    const saved = localStorage.getItem('web3_profile');
-    return saved ? JSON.parse(saved) : { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
+    try {
+      const saved = localStorage.getItem('web3_profile');
+      return saved ? JSON.parse(saved) : { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
+    } catch (e) {
+      console.error('Error parsing userProfile', e);
+      return { name: 'Frontier Operative', bio: 'Neural Sync Level 1', avatar: '' };
+    }
   });
 
   const [accounts, setAccounts] = useState(() => {
-    const saved = localStorage.getItem('web3_accounts');
-    return saved ? JSON.parse(saved) : [{ id: 1, name: 'Primary Core', address: '', active: true }];
+    try {
+      const saved = localStorage.getItem('web3_accounts');
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
+    } catch (e) {
+      console.error('Error parsing accounts', e);
+      return [{ id: 1, name: 'Primary Core', address: '', active: true }];
+    }
   });
 
   const [activeProfileId, setActiveProfileId] = useState(() => {
-    const saved = localStorage.getItem('active_profile_id');
-    return saved ? parseInt(saved) : 1;
+    try {
+      const saved = localStorage.getItem('active_profile_id');
+      const id = saved ? parseInt(saved) : 1;
+      return isNaN(id) ? 1 : id;
+    } catch (e) {
+      return 1;
+    }
   });
 
   const [activeProfileName, setActiveProfileName] = useState(() => {
-    const active = accounts.find(a => a.id === activeProfileId);
-    return active ? active.name : 'Primary Core';
+    try {
+      const active = (accounts || []).find(a => a.id === activeProfileId);
+      return active ? active.name : 'Primary Core';
+    } catch (e) {
+      return 'Primary Core';
+    }
   });
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -1474,13 +1495,13 @@ function App() {
                       </div>
                    </div>
 
-                   <div className="space-y-3">
-                      {rewardHistory.filter(r => r.points > 0).length === 0 ? (
+                    <div className="space-y-3">
+                      {(!Array.isArray(rewardHistory) || rewardHistory.filter(r => r && r.points > 0).length === 0) ? (
                          <div className="py-10 text-center glass rounded-3xl border-dashed border-white/5">
                             <p className="text-sm font-bold text-white/20 uppercase tracking-widest">No recent neural fragments detected.</p>
                          </div>
                       ) : (
-                         rewardHistory.filter(r => r.points > 0).slice(0, 10).map((reward, i) => {
+                         rewardHistory.filter(r => r && r.points > 0).slice(0, 10).map((reward, i) => {
                             const typeMap = {
                                'dapp_interaction': { label: 'Explorer Access', icon: <Globe size={14}/>, color: 'text-indigo-400' },
                                'login': { label: 'Chain Login', icon: <Lock size={14}/>, color: 'text-emerald-400' },
@@ -1500,17 +1521,17 @@ function App() {
                                      </div>
                                      <div>
                                         <div className="text-sm font-black uppercase tracking-tight text-white/80">{info.label}</div>
-                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{new Date(reward.created_at).toLocaleTimeString()} Â· {new Date(reward.created_at).toLocaleDateString()}</div>
+                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{reward.created_at ? new Date(reward.created_at).toLocaleTimeString() : ''} · {reward.created_at ? new Date(reward.created_at).toLocaleDateString() : ''}</div>
                                      </div>
                                   </div>
                                   <div className={`text-sm font-black ${info.color}`}>
-                                     +{reward.points} PTS
+                                     +{reward.points || 0} PTS
                                   </div>
                                </div>
                             );
                          })
                       )}
-                   </div>
+                    </div>
                 </div>
              </section>
           ) : tab.type === 'builtin-content' ? (
@@ -2689,7 +2710,7 @@ function BuiltinContentView({ content, onBack }) {
       </div>
 
       <div className="grid grid-cols-1 gap-12 mt-16">
-        {content.sections.map((section, idx) => (
+        {Array.isArray(content.sections) && content.sections.map((section, idx) => (
           <div key={idx} className="glass-card p-12 rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/3 rounded-bl-[100%] transition-transform group-hover:scale-110"></div>
             <h2 className="text-3xl font-black tracking-tight uppercase italic flex items-center gap-4">
@@ -2699,7 +2720,7 @@ function BuiltinContentView({ content, onBack }) {
             <p className="text-lg text-white/60 leading-relaxed font-medium">
               {section.text}
             </p>
-            {section.bullets && (
+            {Array.isArray(section.bullets) && (
               <ul className="space-y-4 pt-4">
                 {section.bullets.map((bullet, bIdx) => (
                   <li key={bIdx} className="flex items-start gap-4">
