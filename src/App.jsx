@@ -423,7 +423,7 @@ function App() {
     if (!window.ethereum) return false;
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      return chainId === '0xa2d18';
+      return chainId === '0xa2d08';
     } catch (e) {
       return false;
     }
@@ -433,11 +433,11 @@ function App() {
     if (!window.ethereum) return false;
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      if (chainId !== '0xa2d18') { // 666888 in hex
+      if (chainId !== '0xa2d08') { // 666888 in hex
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xa2d18' }],
+            params: [{ chainId: '0xa2d08' }],
           });
           setIsCorrectNetwork(true);
           fetchHLUSDBalance(walletAddress);
@@ -447,7 +447,7 @@ function App() {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: '0xa2d18',
+                chainId: '0xa2d08',
                 chainName: 'Hela Testnet',
                 nativeCurrency: { name: 'HLUSD', symbol: 'HLUSD', decimals: 18 },
                 rpcUrls: ['https://testnet-rpc.helachain.com'],
@@ -472,8 +472,7 @@ function App() {
     if (!window.ethereum || !address) return;
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(HLUSD_CONTRACT, ERC20_ABI, provider);
-      const bal = await contract.balanceOf(address);
+      const bal = await provider.getBalance(address);
       setHlusdBalance(ethers.formatUnits(bal, 18));
     } catch (e) {
       console.error('Failed to fetch HLUSD balance', e);
@@ -488,9 +487,11 @@ function App() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(HLUSD_CONTRACT, ERC20_ABI, signer);
       
-      const tx = await contract.transfer(to, ethers.parseUnits(amount, 18));
+      const tx = await signer.sendTransaction({
+        to: to,
+        value: ethers.parseUnits(amount, 18)
+      });
       return tx;
     } catch (e) {
       console.error('Send HLUSD failed', e);
