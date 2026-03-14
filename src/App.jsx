@@ -116,7 +116,7 @@ function App() {
 
   // Sync balance and network periodically
   useEffect(() => {
-    if (walletAddress && showWalletModal) {
+    if (walletAddress) {
       const syncWallet = async () => {
         const isCorrect = await checkNetworkStatus();
         setIsCorrectNetwork(isCorrect);
@@ -126,9 +126,25 @@ function App() {
         }
       };
 
+      // Listen for network/account changes
+      if (window.ethereum) {
+        window.ethereum.on('chainChanged', syncWallet);
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length > 0) setWalletAddress(accounts[0]);
+          else setWalletAddress('');
+          syncWallet();
+        });
+      }
+
       syncWallet(); // Initial sync
       const interval = setInterval(syncWallet, 10000); // Every 10 seconds
-      return () => clearInterval(interval);
+      
+      return () => {
+        if (window.ethereum) {
+          window.ethereum.removeListener('chainChanged', syncWallet);
+        }
+        clearInterval(interval);
+      };
     }
   }, [walletAddress, showWalletModal]);
 
@@ -423,6 +439,8 @@ function App() {
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xa2d18' }],
           });
+          setIsCorrectNetwork(true);
+          fetchHLUSDBalance(walletAddress);
           return true;
         } catch (switchError) {
           if (switchError.code === 4902) {
@@ -436,6 +454,8 @@ function App() {
                 blockExplorerUrls: ['https://testnet-blockexplorer.helachain.com']
               }],
             });
+            setIsCorrectNetwork(true);
+            fetchHLUSDBalance(walletAddress);
             return true;
           }
           throw switchError;
