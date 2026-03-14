@@ -382,6 +382,41 @@ function App() {
   };
 
 
+  const checkNetwork = async () => {
+    if (!window.ethereum) return false;
+    try {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (chainId !== '0xa2d18') { // 666888 in hex
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xa2d18' }],
+          });
+          return true;
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0xa2d18',
+                chainName: 'Hela Testnet',
+                nativeCurrency: { name: 'HLUSD', symbol: 'HLUSD', decimals: 18 },
+                rpcUrls: ['https://testnet-rpc.helachain.com'],
+                blockExplorerUrls: ['https://testnet-blockexplorer.helachain.com']
+              }],
+            });
+            return true;
+          }
+          throw switchError;
+        }
+      }
+      return true;
+    } catch (e) {
+      console.error('Network check failed', e);
+      return false;
+    }
+  };
+
   const fetchHLUSDBalance = async (address) => {
     if (!window.ethereum || !address) return;
     try {
@@ -396,6 +431,9 @@ function App() {
 
   const sendHLUSD = async (to, amount) => {
     if (!window.ethereum || !walletAddress) return;
+    const isCorrectNetwork = await checkNetwork();
+    if (!isCorrectNetwork) throw new Error('Incorrect network');
+
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -1754,10 +1792,13 @@ function App() {
                        <button 
                         onClick={async () => {
                           if (!sendRecipient || !sendAmount) return alert('Enter recipient and amount.');
+                          if (parseFloat(sendAmount) > parseFloat(hlusdBalance)) return alert('Insufficient HLUSD balance.');
                           setIsTxPending(true);
                           try {
                             const tx = await sendHLUSD(sendRecipient, sendAmount);
-                            alert(`Transaction Broadcast: ${tx.hash}`);
+                            alert(`Transaction Sent! Waiting for confirmation... Hash: ${tx.hash}`);
+                            const receipt = await tx.wait();
+                            alert(`Payment Successful! Confirmed in block ${receipt.blockNumber}`);
                             setSendAmount('');
                             setSendRecipient('');
                             await fetchHLUSDBalance(walletAddress);
@@ -1778,17 +1819,14 @@ function App() {
 
                {activeWalletTab === 'receive' && (
                  <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="w-48 h-48 p-4 glass rounded-[2.5rem] bg-white flex items-center justify-center mb-8 relative">
-                       {/* Mock QR Code */}
-                       <div className="w-full h-full bg-slate-100 rounded-2xl flex flex-wrap p-2 gap-1 overflow-hidden opacity-10">
-                          {Array.from({length: 100}).map((_, i) => (
-                            <div key={i} className={`w-3 h-3 rounded-sm ${Math.random() > 0.5 ? 'bg-black' : 'bg-transparent'}`} />
-                          ))}
-                       </div>
-                       <div className="absolute inset-0 flex items-center justify-center">
-                          <Download size={48} className="text-indigo-600/20" />
-                       </div>
-                    </div>
+                   <div className="w-48 h-48 p-4 glass rounded-[2.5rem] bg-white flex items-center justify-center mb-8 relative group overflow-hidden">
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddress}`} 
+                        alt="Wallet QR" 
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                   </div>
                     <div className="text-center w-full">
                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Your Receive Address</div>
                        <div className="flex items-center gap-2 bg-black/40 p-4 rounded-2xl border border-white/5 break-all font-mono text-xs text-indigo-200">
