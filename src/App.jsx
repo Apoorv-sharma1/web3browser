@@ -42,42 +42,45 @@ import {
   Terminal,
   LayoutGrid,
   Rocket,
-  Gamepad2
+  Gamepad2,
+  Sparkles, // Added Sparkles
+  Droplets, // Added Droplets
+  Sun // Added Sun
 } from 'lucide-react';
 import { SnakeGame, TetrisGame, SpaceBlasterGame, TicTacToe } from './components/Games';
 
 // Mock dApps Data
 const DAPPS = [
-  { id: 1, name: 'Uniswap', url: 'https://app.uniswap.org', icon: '🦄', category: 'DeFi', description: 'Swap tokens easily' },
-  { id: 2, name: 'SuperRare', url: 'https://superrare.com', icon: '🎨', category: 'NFT', description: 'Curated NFT art marketplace' },
-  { id: 3, name: 'Aave', url: 'https://app.aave.com', icon: '👻', category: 'Lending', description: 'Earn interest on deposits' },
-  { id: 4, name: 'Compound', url: 'https://compound.finance', icon: '🏦', category: 'Lending', description: 'Algorithmic money markets' },
-  { id: 5, name: 'Hela Bridge', url: 'https://hela.network', icon: '🌉', category: 'Bridge', description: 'Move assets across chains' },
-  { id: 6, name: 'Magic Eden', url: 'https://magiceden.io', icon: '🪄', category: 'NFT', description: 'Community-first NFT marketplace' },
-  { id: 7, name: 'PancakeSwap', url: 'https://pancakeswap.finance', icon: '🥞', category: 'DeFi', description: 'Fast decentralized exchange' },
-  { id: 8, name: 'Curve', url: 'https://curve.fi', icon: '📈', category: 'DeFi', description: 'Efficient stablecoin swaps' },
-  { id: 9, name: 'Blur', url: 'https://blur.io', icon: '🟠', category: 'NFT', description: 'Professional NFT marketplace' },
-  { id: 10, name: 'Lido', url: 'https://lido.fi', icon: '💧', category: 'Liquid Staking', description: 'Stake ETH and earn rewards' },
-  { id: 11, name: '1inch', url: 'https://app.1inch.io', icon: '📏', category: 'DeFi Aggregator', description: 'Get the best swap rates' },
-  { id: 12, name: 'GMX', url: 'https://app.gmx.io', icon: '💹', category: 'Perpetuals', description: 'Decentralized perpetual exchange' },
-  { id: 13, name: 'Synthetix', url: 'https://synthetix.io', icon: '⚔️', category: 'Derivatives', description: 'Trade synthetic assets' },
-  { id: 14, name: 'Trader Joe', url: 'https://traderjoexyz.com', icon: '🚜', category: 'DeFi', description: 'AVAX ecosystem hub' },
-  { id: 15, name: 'LooksRare', url: 'https://looksrare.org', icon: '💎', category: 'NFT', description: 'Community-first NFT marketplace' },
-  { id: 16, name: 'SushiSwap', url: 'https://sushi.com', icon: '🍣', category: 'DeFi', description: 'Multi-chain DEX ecosystem' },
-  { id: 17, name: 'Rocket Pool', url: 'https://rocketpool.net', icon: '🚀', category: 'Liquid Staking', description: 'Decentralized ETH staking' },
-  { id: 18, name: 'Aptos Bridge', url: 'https://theaptosbridge.com', icon: '🌀', category: 'Bridge', description: 'Bridge assets to Aptos' },
-  { id: 19, name: 'Jupiter', url: 'https://jup.ag', icon: '🪐', category: 'Solana DeFi', description: 'Best swap rates on Solana' },
-  { id: 20, name: 'Raydium', url: 'https://raydium.io', icon: '☀️', category: 'Solana DeFi', description: 'Solana AMM and ecosystem' },
-  { id: 21, name: 'Arbitrum Bridge', url: 'https://bridge.arbitrum.io', icon: '🔵', category: 'Bridge', description: 'Official Arbitrum bridge' },
-  { id: 22, name: 'Etherscan', url: 'https://etherscan.io', icon: '🔍', category: 'Explorer', description: 'Ethereum blockchain explorer' },
-  { id: 23, name: 'CoinGecko', url: 'https://coingecko.com', icon: '🦎', category: 'Analytics', description: 'Live crypto prices & market data' },
-  { id: 24, name: 'CoinMarketCap', url: 'https://coinmarketcap.com', icon: '📊', category: 'Analytics', description: 'Crypto market cap rankings' },
-  { id: 25, name: 'Zora', url: 'https://zora.co', icon: '🔮', category: 'NFT', description: 'Create and collect onchain' },
-  { id: 26, name: 'Dune Analytics', url: 'https://dune.com', icon: '📉', category: 'Analytics', description: 'Blockchain data dashboards' },
-  { id: 27, name: 'Polygon', url: 'https://polygon.technology', icon: '🔷', category: 'Layer 2', description: 'Ethereum scaling solution' },
-  { id: 28, name: 'Optimism', url: 'https://optimism.io', icon: '🔴', category: 'Layer 2', description: 'Fast low-cost Ethereum L2' },
-  { id: 29, name: 'Solscan', url: 'https://solscan.io', icon: '🌞', category: 'Explorer', description: 'Solana blockchain explorer' },
-  { id: 30, name: 'DeFi Llama', url: 'https://defillama.com', icon: '🦙', category: 'Analytics', description: 'DeFi TVL and protocol data' }
+  { id: 1, name: 'Uniswap', url: 'https://app.uniswap.org', icon: <Zap size={24} className="text-pink-500" />, category: 'DeFi', description: 'Swap tokens easily' },
+  { id: 2, name: 'SuperRare', url: 'https://superrare.com', icon: <Star size={24} className="text-emerald-400" />, category: 'NFT', description: 'Curated NFT art marketplace' },
+  { id: 3, name: 'Aave', url: 'https://app.aave.com', icon: <Activity size={24} className="text-purple-400" />, category: 'Lending', description: 'Earn interest on deposits' },
+  { id: 4, name: 'Compound', url: 'https://compound.finance', icon: <Layers size={24} className="text-green-400" />, category: 'Lending', description: 'Algorithmic money markets' },
+  { id: 5, name: 'Hela Bridge', url: 'https://hela.network', icon: <Globe size={24} className="text-indigo-400" />, category: 'Bridge', description: 'Move assets across chains' },
+  { id: 6, name: 'Magic Eden', url: 'https://magiceden.io', icon: <Sparkles size={24} className="text-fuchsia-400" />, category: 'NFT', description: 'Community-first NFT marketplace' },
+  { id: 7, name: 'PancakeSwap', url: 'https://pancakeswap.finance', icon: <Zap size={24} className="text-yellow-500" />, category: 'DeFi', description: 'Fast decentralized exchange' },
+  { id: 8, name: 'Curve', url: 'https://curve.fi', icon: <TrendingUp size={24} className="text-emerald-500" />, category: 'DeFi', description: 'Efficient stablecoin swaps' },
+  { id: 9, name: 'Blur', url: 'https://blur.io', icon: <Shield size={24} className="text-orange-500" />, category: 'NFT', description: 'Professional NFT marketplace' },
+  { id: 10, name: 'Lido', url: 'https://lido.fi', icon: <Droplets size={24} className="text-blue-400" />, category: 'Liquid Staking', description: 'Stake ETH and earn rewards' },
+  { id: 11, name: '1inch', url: 'https://app.1inch.io', icon: <Zap size={24} className="text-indigo-500" />, category: 'DeFi Aggregator', description: 'Get the best swap rates' },
+  { id: 12, name: 'GMX', url: 'https://app.gmx.io', icon: <TrendingUp size={24} className="text-emerald-400" />, category: 'Perpetuals', description: 'Decentralized perpetual exchange' },
+  { id: 13, name: 'Synthetix', url: 'https://synthetix.io', icon: <Layers size={24} className="text-fuchsia-500" />, category: 'Derivatives', description: 'Trade synthetic assets' },
+  { id: 14, name: 'Trader Joe', url: 'https://traderjoexyz.com', icon: <ShoppingCart size={24} className="text-orange-400" />, category: 'DeFi', description: 'AVAX ecosystem hub' },
+  { id: 15, name: 'LooksRare', url: 'https://looksrare.org', icon: <Sparkles size={24} className="text-emerald-300" />, category: 'NFT', description: 'Community-first NFT marketplace' },
+  { id: 16, name: 'SushiSwap', url: 'https://sushi.com', icon: <Zap size={24} className="text-red-400" />, category: 'DeFi', description: 'Multi-chain DEX ecosystem' },
+  { id: 17, name: 'Rocket Pool', url: 'https://rocketpool.net', icon: <Rocket size={24} className="text-orange-500" />, category: 'Liquid Staking', description: 'Decentralized ETH staking' },
+  { id: 18, name: 'Aptos Bridge', url: 'https://theaptosbridge.com', icon: <Globe size={24} className="text-cyan-400" />, category: 'Bridge', description: 'Bridge assets to Aptos' },
+  { id: 19, name: 'Jupiter', url: 'https://jup.ag', icon: <Zap size={24} className="text-green-400" />, category: 'Solana DeFi', description: 'Best swap rates on Solana' },
+  { id: 20, name: 'Raydium', url: 'https://raydium.io', icon: <Sun size={24} className="text-yellow-400" />, category: 'Solana DeFi', description: 'Solana AMM and ecosystem' },
+  { id: 21, name: 'Arbitrum Bridge', url: 'https://bridge.arbitrum.io', icon: <Layers size={24} className="text-blue-500" />, category: 'Bridge', description: 'Official Arbitrum bridge' },
+  { id: 22, name: 'Etherscan', url: 'https://etherscan.io', icon: <Search size={24} className="text-indigo-400" />, category: 'Explorer', description: 'Ethereum blockchain explorer' },
+  { id: 23, name: 'CoinGecko', url: 'https://coingecko.com', icon: <TrendingUp size={24} className="text-emerald-500" />, category: 'Analytics', description: 'Live crypto prices & market data' },
+  { id: 24, name: 'CoinMarketCap', url: 'https://coinmarketcap.com', icon: <Activity size={24} className="text-blue-500" />, category: 'Analytics', description: 'Crypto market cap rankings' },
+  { id: 25, name: 'Zora', url: 'https://zora.co', icon: <Sparkles size={24} className="text-purple-400" />, category: 'NFT', description: 'Create and collect onchain' },
+  { id: 26, name: 'Dune Analytics', url: 'https://dune.com', icon: <TrendingUp size={24} className="text-fuchsia-400" />, category: 'Analytics', description: 'Blockchain data dashboards' },
+  { id: 27, name: 'Polygon', url: 'https://polygon.technology', icon: <Layers size={24} className="text-purple-600" />, category: 'Layer 2', description: 'Ethereum scaling solution' },
+  { id: 28, name: 'Optimism', url: 'https://optimism.io', icon: <Shield size={24} className="text-red-500" />, category: 'Layer 2', description: 'Fast low-cost Ethereum L2' },
+  { id: 29, name: 'Solscan', url: 'https://solscan.io', icon: <Search size={24} className="text-cyan-500" />, category: 'Explorer', description: 'Solana blockchain explorer' },
+  { id: 30, name: 'DeFi Llama', url: 'https://defillama.com', icon: <TrendingUp size={24} className="text-emerald-600" />, category: 'Analytics', description: 'DeFi TVL and protocol data' }
 ];
 
 const HLUSD_CONTRACT = '0xBE75FDe9DeDe700635E3dDBe7e29b5db1A76C125';
@@ -1336,9 +1339,10 @@ function App() {
                                'wtf_quest': { label: 'Main Mission', icon: <Trophy size={14}/>, color: 'text-purple-400' },
                                'wtf_quest_action': { label: 'WTF Zone Play', icon: <Gamepad2 size={14}/>, color: 'text-red-400' },
                                'node_referral': { label: 'Node Sync', icon: <Users size={14}/>, color: 'text-blue-400' },
-                               'partner_cashback': { label: 'Voucher Grid', icon: <ShoppingCart size={14}/>, color: 'text-emerald-400' }
+                               'partner_cashback': { label: 'Voucher Grid', icon: <ShoppingCart size={14}/>, color: 'text-emerald-400' },
+                               'signup_bonus': { label: 'Genesis Bonus', icon: <Star size={14}/>, color: 'text-yellow-400' }
                             };
-                            const info = typeMap[reward.activity_type] || { label: 'System Reward', icon: <Zap size={14}/>, color: 'text-yellow-400' };
+                            const info = typeMap[reward.activity_type] || { label: 'Neural Fragment', icon: <Zap size={14}/>, color: 'text-indigo-300' };
                             
                             return (
                                <div key={reward.id || i} className="flex items-center justify-between p-4 glass rounded-2xl border-white/5 hover:bg-white/5 transition-all group animate-in slide-in-from-left duration-500" style={{ animationDelay: `${i * 100}ms` }}>
@@ -1573,7 +1577,7 @@ function App() {
                     icon={<ShieldCheck size={24} className="text-red-400" />}
                     tag="Active Defense"
                     url="https://en.wikipedia.org/wiki/Internet_privacy"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-privacy', name: 'Privacy Protocol', url, icon: 'ðŸ›¡ï¸', category: 'Security' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-privacy', name: 'Privacy Protocol', url, icon: <ShieldCheck size={24} className="text-red-400" />, category: 'Security' } })}
                   />
                   <EduCard 
                     title="Wallet Security" 
@@ -1581,7 +1585,7 @@ function App() {
                     icon={<Lock size={24} className="text-blue-400" />}
                     tag="Key Protection"
                     url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet#Security"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-wallet', name: 'Wallet Security', url, icon: 'ðŸ”', category: 'Security' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-wallet', name: 'Wallet Security', url, icon: <Lock size={24} className="text-blue-400" />, category: 'Security' } })}
                   />
                   <EduCard 
                     title="dApp Safety Check" 
@@ -1589,7 +1593,7 @@ function App() {
                     icon={<Activity size={24} className="text-emerald-400" />}
                     tag="Verification"
                     url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-dapps', name: 'dApp Verification', url, icon: 'âœ…', category: 'Security' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-dapps', name: 'dApp Verification', url, icon: <Activity size={24} className="text-emerald-400" />, category: 'Security' } })}
                   />
                   <EduCard 
                     title="Smart Contract Alerts" 
@@ -1597,7 +1601,7 @@ function App() {
                     icon={<AlertTriangle size={24} className="text-yellow-400" />}
                     tag="Guardianship"
                     url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-sc', name: 'Contract Alerts', url, icon: 'ðŸ“œ', category: 'Security' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-sc', name: 'Smart Contract Alerts', url, icon: <AlertTriangle size={24} className="text-yellow-400" />, category: 'Security' } })}
                   />
                   <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5 col-span-1 md:col-span-2">
                     <div className="flex items-center gap-4">
@@ -2122,7 +2126,7 @@ function App() {
                     {activeQuests.includes('scholar') ? (
                        <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
                     ) : (
-                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
+                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); updateActiveTab({ type: 'education', dapp: DAPPS.find(d => d.category === 'Education') || DAPPS[21] }); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
                     )}
                  </div>
                )}
@@ -2137,7 +2141,7 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
+                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: 'dapps' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
                  </div>
                )}
  
@@ -2151,7 +2155,7 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
+                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: 'wtf-zone' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
                  </div>
                )}
              </div>
@@ -2219,12 +2223,12 @@ function App() {
             <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400 mb-4 px-2">Available Vouchers</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-4 pb-4 custom-scrollbar mb-8">
                {[
-                 { brand: 'Amazon', value: '$10 Gift Card', icon: 'ðŸ›’', cost: 10000, color: 'hover:border-yellow-500/50 hover:bg-yellow-500/10' },
-                 { brand: 'Apple', value: '$25 Gift Card', icon: 'ðŸŽ', cost: 25000, color: 'hover:border-white/50 hover:bg-white/10' },
-                 { brand: 'Flipkart', value: 'â‚¹500 Voucher', icon: 'ðŸ›ï¸', cost: 5000, color: 'hover:border-blue-500/50 hover:bg-blue-500/10' },
-                 { brand: 'Croma', value: '10% Discount', icon: 'ðŸ’»', cost: 2000, color: 'hover:border-teal-500/50 hover:bg-teal-500/10' },
-                 { brand: 'Myntra', value: 'â‚¹1000 Voucher', icon: 'ðŸ‘—', cost: 10000, color: 'hover:border-pink-500/50 hover:bg-pink-500/10' },
-                 { brand: 'Steam', value: '$20 Wallet', icon: 'ðŸŽ®', cost: 20000, color: 'hover:border-indigo-500/50 hover:bg-indigo-500/10' },
+                 { brand: 'Amazon', value: '$10 Gift Card', icon: <ShoppingCart size={32} className="text-yellow-500" />, cost: 10000, color: 'hover:border-yellow-500/50 hover:bg-yellow-500/10' },
+                 { brand: 'Apple', value: '$25 Gift Card', icon: <Zap size={32} className="text-white" />, cost: 25000, color: 'hover:border-white/50 hover:bg-white/10' },
+                 { brand: 'Flipkart', value: '₹500 Voucher', icon: <ShoppingCart size={32} className="text-blue-500" />, cost: 5000, color: 'hover:border-blue-500/50 hover:bg-blue-500/10' },
+                 { brand: 'Croma', value: '10% Discount', icon: <Cpu size={32} className="text-teal-500" />, cost: 2000, color: 'hover:border-teal-500/50 hover:bg-teal-500/10' },
+                 { brand: 'Myntra', value: '₹1000 Voucher', icon: <ShoppingCart size={32} className="text-pink-500" />, cost: 10000, color: 'hover:border-pink-500/50 hover:bg-pink-500/10' },
+                 { brand: 'Steam', value: '$20 Wallet', icon: <Gamepad2 size={32} className="text-indigo-500" />, cost: 20000, color: 'hover:border-indigo-500/50 hover:bg-indigo-500/10' },
                ].map((v, i) => (
                   <div key={i} className={`glass rounded-[2rem] p-6 border-white/5 transition-all group cursor-pointer ${v.color}`}>
                      <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">{v.icon}</div>
@@ -2287,8 +2291,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              setPoints(prev => prev + score);
-              alert(`Neural Sync Results: +${score} Points added to your Identity.`);
+              claimReward('wtf_quest_action');
+              alert(`Neural Sync Results: +Points added to your Identity for playing Snake.`);
             }
           }} 
         />
@@ -2298,8 +2302,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              setPoints(prev => prev + score);
-              alert(`Tetris Override: +${score} Points added to your Identity.`);
+              claimReward('wtf_quest_action');
+              alert(`Tetris Override: +Points added to your Identity for stacking blocks.`);
             }
           }} 
         />
@@ -2309,8 +2313,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              setPoints(prev => prev + score);
-              alert(`Sector Secured: +${score} Points added to your Identity.`);
+              claimReward('wtf_quest_action');
+              alert(`Sector Secured: +Points added to your Identity for defending the grid.`);
             }
           }} 
         />
@@ -2320,8 +2324,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              setPoints(prev => prev + Math.max(score, 100)); // Standardize reward
-              alert(`Match Completed! +${Math.max(score, 100)} Points added to your Identity.`);
+              claimReward('wtf_quest_action');
+              alert(`Match Completed! +Points added to your Identity for the battle.`);
             }
           }} 
         />
