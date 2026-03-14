@@ -98,6 +98,7 @@ function App() {
   });
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
 
   useEffect(() => {
@@ -363,6 +364,39 @@ function App() {
             </div>
             
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Zero-Knowledge Proof Enabled Protocol</p>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative glass-card rounded-[3rem] p-10 max-w-md w-full border border-red-500/20 shadow-2xl shadow-red-500/10 animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 mx-auto mb-6">
+              <AlertTriangle size={32} className="text-red-400" />
+            </div>
+            <h2 className="text-2xl font-black uppercase tracking-tighter text-center mb-2">Wipe Matrix Cache?</h2>
+            <p className="text-white/40 text-sm font-bold text-center tracking-wide leading-relaxed mb-8">
+              This will permanently delete all your data, profile, accounts, and rewards. <span className="text-red-400">This action cannot be undone.</span>
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-4 glass rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-white/10 transition-all border border-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                className="flex-1 py-4 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-2xl font-black uppercase text-sm tracking-widest text-red-400 transition-all active:scale-95"
+              >
+                Delete Everything
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1100,14 +1134,26 @@ function App() {
                         <h4 className="text-xs font-black uppercase tracking-[0.3em] text-red-400 mb-6 flex items-center gap-2">
                           <Shield size={14} /> Danger Zone
                         </h4>
+
+                        {/* Logout Button */}
                         <button 
                           onClick={() => {
-                            if(confirm('PURGE ALL DATA? This cannot be undone.')) {
-                               localStorage.clear();
-                               window.location.reload();
-                            }
+                            if(window.ethereum) window.ethereum.removeAllListeners();
+                            localStorage.removeItem('web3_walletAddress');
+                            setWalletAddress('');
+                            setIsWalletGateOpen(true);
+                            setActiveTab('explore');
+                            setActiveDApp(null);
                           }}
-                          className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-2xl border border-white/5 transition-all text-center"
+                          className="w-full py-4 mb-3 text-xs font-black uppercase tracking-[0.3em] text-white/50 hover:text-amber-400 hover:bg-amber-400/10 rounded-2xl border border-white/5 hover:border-amber-400/20 transition-all text-center flex items-center justify-center gap-2"
+                        >
+                          <LogOut size={14} /> DISCONNECT SESSION
+                        </button>
+
+                        {/* Delete Account Button */}
+                        <button 
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-2xl border border-white/5 hover:border-red-400/20 transition-all text-center"
                         >
                            WIPE MATRIX CACHE
                         </button>
