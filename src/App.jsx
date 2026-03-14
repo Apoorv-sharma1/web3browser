@@ -32,7 +32,11 @@ import {
   CheckCircle,
   X,
   ShoppingCart,
-  Users
+  Users,
+  Plus,
+  ChevronLeft,
+  RefreshCw,
+  Star
 } from 'lucide-react';
 
 // Mock dApps Data
@@ -74,17 +78,10 @@ const API_URL = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !==
   : 'https://web3browser-backend.vercel.app';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('explore');
-  const [activeDApp, setActiveDApp] = useState(null);
-  const [iframeStatus, setIframeStatus] = useState('loading');
   const [walletAddress, setWalletAddress] = useState('');
   const [balance, setBalance] = useState('0.00');
   const [points, setPoints] = useState(0);
   const [dappList, setDappList] = useState(DAPPS);
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchError, setSearchError] = useState(null);
   const [helaBalance, setHelaBalance] = useState('0.00');
   const [isWalletGateOpen, setIsWalletGateOpen] = useState(true);
   
@@ -102,6 +99,69 @@ function App() {
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
   
+  // Browser Tab System
+  const [tabs, setTabs] = useState([
+    { 
+      id: 'tab-1', 
+      type: 'explore', 
+      url: '', 
+      name: 'New Tab', 
+      icon: '🌐', 
+      history: [], 
+      historyIndex: -1, 
+      isBookmarked: false,
+      query: '',
+      dapp: null,
+      searchResults: [],
+      isSearching: false,
+      searchError: null
+    }
+  ]);
+  const [activeTabId, setActiveTabId] = useState('tab-1');
+  
+  // Helper to get active tab
+  const activeTabObj = tabs.find(t => t.id === activeTabId) || tabs[0];
+  
+  // Refactored helper to update active tab
+  const updateActiveTab = (updates) => {
+    setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, ...updates } : t));
+  };
+
+  const addTab = (type = 'explore', url = '', name = 'New Tab') => {
+    const newId = `tab-${Date.now()}`;
+    setTabs(prev => [...prev, { 
+      id: newId, 
+      type, 
+      url, 
+      name, 
+      icon: '🌐', 
+      history: [], 
+      historyIndex: -1, 
+      isBookmarked: false,
+      query: '',
+      dapp: null,
+      searchResults: [],
+      isSearching: false,
+      searchError: null
+    }]);
+    setActiveTabId(newId);
+  };
+
+  const closeTab = (e, id) => {
+    e.stopPropagation();
+    if (tabs.length === 1) return;
+    const newTabs = tabs.filter(t => t.id !== id);
+    setTabs(newTabs);
+    if (activeTabId === id) {
+      // Find the index of the closed tab and pick the one next to it
+      const closedIndex = tabs.findIndex(t => t.id === id);
+      const nextActiveIndex = Math.max(0, closedIndex - 1);
+      setActiveTabId(newTabs[nextActiveIndex].id);
+    }
+  };
+
+  const [iframeStatus, setIframeStatus] = useState('loading');
+
   // Quest States
   const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
   const [completedQuests, setCompletedQuests] = useState(() => {
@@ -146,7 +206,7 @@ function App() {
   // Education Article Quest Timer
   useEffect(() => {
     let interval;
-    if (activeTab === 'explore' && activeDApp && activeDApp.category === 'Education' && activeQuests.includes('scholar')) {
+    if (activeTabObj.type === 'explore' && activeTabObj.dapp && activeTabObj.dapp.category === 'Education' && activeQuests.includes('scholar')) {
       interval = setInterval(() => {
         setArticleTimer(prev => {
           if (prev >= 9) {
@@ -164,11 +224,11 @@ function App() {
       setArticleTimer(0);
     }
     return () => clearInterval(interval);
-  }, [activeTab, activeDApp, activeQuests]);
+  }, [activeTabId, tabs, activeQuests]);
 
-  // Check if activeDApp can be framed securely
+  // Check if activeTabObj.dapp can be framed securely
   useEffect(() => {
-    if (activeDApp) {
+    if (activeTabObj.dapp) {
       setIframeStatus('loading');
       
       // VIP Sites: Domains that we KNOW block iframes. 
@@ -181,14 +241,14 @@ function App() {
         'coingecko.com', 'coinmarketcap.com', 'zora.co', 'dune.com',
         'polygon.technology', 'optimism.io', 'solscan.io', 'defillama.com'
       ];
-      const domain = activeDApp.url.toLowerCase();
+      const domain = activeTabObj.dapp.url.toLowerCase();
       
       if (VIP_SITES.some(site => domain.includes(site))) {
         setIframeStatus('blocked');
         return;
       }
 
-      fetch(`${API_URL}/search/check-frame?url=${encodeURIComponent(activeDApp.url)}`)
+      fetch(`${API_URL}/search/check-frame?url=${encodeURIComponent(activeTabObj.dapp.url)}`)
         .then(res => res.json())
         .then(data => {
           if (data.frameable) {
@@ -202,7 +262,7 @@ function App() {
           setIframeStatus('blocked');
         });
     }
-  }, [activeDApp]);
+  }, [activeTabId, tabs]);
 
   // Fetch dApps from backend on load
   useEffect(() => {
@@ -229,9 +289,12 @@ function App() {
   // Debounced search suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (searchQuery.trim().length > 0 && !(/^(http:\/\/|https:\/\/)/i.test(searchQuery) || searchQuery.includes('.'))) {
+      const activeTab = tabs.find(t => t.id === activeTabId);
+      const query = activeTab?.query || '';
+      
+      if (query.trim().length > 0 && !(/^(http:\/\/|https:\/\/)/i.test(query) || query.includes('.'))) {
         try {
-          const res = await fetch(`${API_URL}/search/suggest?q=${encodeURIComponent(searchQuery)}`);
+          const res = await fetch(`${API_URL}/search/suggest?q=${encodeURIComponent(query)}`);
           if (res.ok) {
             const data = await res.json();
             setSuggestions(data.slice(0, 5)); // Limit to top 5
@@ -248,7 +311,7 @@ function App() {
 
     const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [activeTabId, tabs.find(t => t.id === activeTabId)?.query]);
 
   const executeSearch = async (queryToSearch) => {
     const query = queryToSearch.trim();
@@ -256,52 +319,51 @@ function App() {
 
     setShowSuggestions(false);
     
-    // URL detection based on user rules
+    // URL detection
     const isUrl = query.startsWith('http://') || query.startsWith('https://') || (query.includes('.') && !query.includes(' ') && !query.startsWith(' '));
     
     if (isUrl) {
       const url = query.startsWith('http') ? query : `https://${query}`;
-      setSearchQuery(query);
-      setActiveDApp({ id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' });
-      setActiveTab('explore');
+      updateActiveTab({ 
+        query: query,
+        dapp: { id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' },
+        type: 'explore'
+      });
     } else {
       // Perform Search
-      setSearchQuery(query);
-      setActiveDApp(null);
-      setActiveTab('search');
-      setSearchError(null);
-      setIsSearching(true);
+      updateActiveTab({ 
+        query: query,
+        dapp: null,
+        type: 'search',
+        searchError: null,
+        isSearching: true
+      });
       
       const searchUrl = `${API_URL}/search?q=${encodeURIComponent(query)}`;
-      console.log('Fetching results from:', searchUrl);
       
       try {
         const res = await fetch(searchUrl);
         if(res.ok) {
           const data = await res.json();
-          console.log('Search results received:', data);
-          
-          if (Array.isArray(data)) {
-            setSearchResults(data);
-          } else if (data.results) {
-            setSearchResults(data.results);
-            if (data.warning) {
-              setSearchError(data.warning);
-            }
-          } else if (data.error) {
-            setSearchResults([]);
-            setSearchError(data.message || data.error);
-          }
+          const results = Array.isArray(data) ? data : (data.results || []);
+          updateActiveTab({ 
+            searchResults: results,
+            isSearching: false,
+            searchError: data.error ? (data.message || data.error) : null
+          });
         } else {
-          setSearchResults([]);
-          setSearchError(`Backend error: ${res.status}`);
+          updateActiveTab({ 
+            searchResults: [],
+            isSearching: false,
+            searchError: `Backend error: ${res.status}`
+          });
         }
       } catch (err) {
-        console.error('Search failed', err);
-        setSearchResults([]);
-        setSearchError('Connection failed: Please check if VITE_API_URL is correct on Vercel.');
-      } finally {
-        setIsSearching(false);
+        updateActiveTab({ 
+          searchResults: [],
+          isSearching: false,
+          searchError: 'Connection failed.'
+        });
       }
     }
   };
@@ -505,7 +567,7 @@ function App() {
       {/* Main App Workspace */}
       {/* Sidebar */}
       <aside className="w-20 lg:w-72 border-r border-white/5 flex flex-col items-center lg:items-stretch py-8 px-5 bg-[#0a0c0f] relative z-20 shadow-2xl">
-        <div className="flex items-center gap-4 px-3 mb-12 overflow-hidden group cursor-pointer" onClick={() => {setActiveTab('explore'); setActiveDApp(null)}}>
+        <div className="flex items-center gap-4 px-3 mb-12 overflow-hidden group cursor-pointer" onClick={() => {updateActiveTab({ type: 'explore', dapp: null })}}>
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform duration-500">
             <Globe size={26} className="text-white animate-pulse" />
           </div>
@@ -519,30 +581,27 @@ function App() {
           <NavItem 
             icon={<Globe size={22}/>} 
             label="Explore" 
-            active={activeTab === 'explore' && !activeDApp} 
+            active={activeTabObj.type === 'explore' && !activeTabObj.dapp} 
             onClick={() => {
-              setActiveTab('explore'); 
-              setActiveDApp(null); 
-              setSearchQuery('');
+              updateActiveTab({ type: 'explore', dapp: null, query: '' });
             }} 
           />
           <NavItem 
             icon={<Grid size={22}/>} 
             label="DApps" 
-            active={activeTab === 'dapps'} 
+            active={activeTabObj.type === 'dapps'} 
             onClick={() => {
-              setActiveTab('dapps'); 
-              setActiveDApp(null);
+              updateActiveTab({ type: 'dapps', dapp: null });
             }} 
           />
-          <NavItem icon={<Trophy size={22}/>} label="Rewards" active={activeTab === 'rewards'} onClick={() => {setActiveTab('rewards'); setActiveDApp(null)}} />
-          <NavItem icon={<Play size={22}/>} label="WTF Zone" active={activeTab === 'wtf-zone'} onClick={() => {setActiveTab('wtf-zone'); setActiveDApp(null)}} />
-          <NavItem icon={<BookOpen size={22}/>} label="Education" active={activeTab === 'education'} onClick={() => {setActiveTab('education'); setActiveDApp(null)}} />
-          <NavItem icon={<Shield size={22}/>} label="Security" active={activeTab === 'security'} onClick={() => {setActiveTab('security'); setActiveDApp(null)}} />
+          <NavItem icon={<Trophy size={22}/>} label="Rewards" active={activeTabObj.type === 'rewards'} onClick={() => {updateActiveTab({ type: 'rewards', dapp: null })}} />
+          <NavItem icon={<Play size={22}/>} label="WTF Zone" active={activeTabObj.type === 'wtf-zone'} onClick={() => {updateActiveTab({ type: 'wtf-zone', dapp: null })}} />
+          <NavItem icon={<BookOpen size={22}/>} label="Education" active={activeTabObj.type === 'education'} onClick={() => {updateActiveTab({ type: 'education', dapp: null })}} />
+          <NavItem icon={<Shield size={22}/>} label="Security" active={activeTabObj.type === 'security'} onClick={() => {updateActiveTab({ type: 'security', dapp: null })}} />
         </nav>
 
         <div className="mt-auto pt-8 border-t border-white/5 w-full">
-          <NavItem icon={<Settings size={22}/>} label="Settings" active={activeTab === 'settings'} onClick={() => {setActiveTab('settings'); setActiveDApp(null)}} />
+          <NavItem icon={<Settings size={22}/>} label="Settings" active={activeTabObj.type === 'settings'} onClick={() => {updateActiveTab({ type: 'settings', dapp: null })}} />
         </div>
       </aside>
 
@@ -551,65 +610,129 @@ function App() {
         <div className="hero-glow top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full"></div>
         <div className="hero-glow bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 rounded-full"></div>
 
-        {/* Header */}
-        <header className="h-24 border-b border-white/5 flex items-center justify-between px-10 bg-[#07090c]/40 backdrop-blur-2xl sticky top-0 z-30">
-          <div className="flex items-center gap-6 flex-1 max-w-2xl">
+        {/* Tab Bar */}
+        <div className="h-12 bg-[#0a0c0f] border-b border-white/5 flex items-center px-4 gap-2 overflow-x-auto no-scrollbar relative z-40">
+          {tabs.map((tab) => (
+            <div 
+              key={tab.id}
+              onClick={() => setActiveTabId(tab.id)}
+              className={`group h-8 px-4 rounded-xl flex items-center gap-3 cursor-pointer transition-all border shrink-0 max-w-[200px] ${
+                activeTabId === tab.id 
+                  ? 'bg-white/10 border-white/10 text-white' 
+                  : 'bg-transparent border-transparent text-white/40 hover:bg-white/5 hover:text-white/60'
+              }`}
+            >
+              <Globe size={14} className={activeTabId === tab.id ? "text-indigo-400" : "text-white/20"} />
+              <span className="text-xs font-bold truncate tracking-tight">{tab.name}</span>
+              <button 
+                onClick={(e) => closeTab(e, tab.id)}
+                className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-white/10 transition-all"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          <button 
+            onClick={() => addTab()}
+            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all active:scale-90 shrink-0"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+
+        {/* Header (Integrated Navigation) */}
+        <header className="h-20 border-b border-white/5 flex items-center justify-between px-10 bg-[#07090c]/40 backdrop-blur-2xl sticky top-0 z-30">
+          <div className="flex items-center gap-5 flex-1 max-w-4xl">
+            {/* Nav Controls */}
+            <div className="flex items-center gap-2 pr-4 border-r border-white/10">
+              <button 
+                disabled={activeTabObj.historyIndex <= 0}
+                onClick={() => {
+                  const newIndex = activeTabObj.historyIndex - 1;
+                  const prevHistory = activeTabObj.history[newIndex];
+                  if (prevHistory) {
+                    updateActiveTab({ 
+                      historyIndex: newIndex,
+                      query: prevHistory.query,
+                      type: prevHistory.type === 'url' ? 'explore' : 'search',
+                      dapp: prevHistory.type === 'url' ? { id: 'custom', name: prevHistory.query, url: prevHistory.query.startsWith('http') ? prevHistory.query : `https://${prevHistory.query}`, icon: '🌐', category: 'Web' } : null,
+                      name: prevHistory.type === 'url' ? prevHistory.query : `Search: ${prevHistory.query}`
+                    });
+                  }
+                }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                disabled={!activeTabObj.history || activeTabObj.historyIndex >= activeTabObj.history.length - 1}
+                onClick={() => {
+                  const newIndex = activeTabObj.historyIndex + 1;
+                  const nextHistory = activeTabObj.history[newIndex];
+                  if (nextHistory) {
+                    updateActiveTab({ 
+                      historyIndex: newIndex,
+                      query: nextHistory.query,
+                      type: nextHistory.type === 'url' ? 'explore' : 'search',
+                      dapp: nextHistory.type === 'url' ? { id: 'custom', name: nextHistory.query, url: nextHistory.query.startsWith('http') ? nextHistory.query : `https://${nextHistory.query}`, icon: '🌐', category: 'Web' } : null,
+                      name: nextHistory.type === 'url' ? nextHistory.query : `Search: ${nextHistory.query}`
+                    });
+                  }
+                }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+              >
+                <ChevronRight size={20} />
+              </button>
+              <button 
+                onClick={() => {
+                  setIframeStatus('loading');
+                  // Trigger re-render of iframe by temporarily clearing and resetting status
+                  setTimeout(() => {
+                    if (activeTabObj.type === 'search') executeSearch(activeTabObj.query);
+                    else setIframeStatus('loaded');
+                  }, 100);
+                }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all"
+              >
+                <RefreshCw size={18} />
+              </button>
+            </div>
+
             <div className="relative w-full group">
-              <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-indigo-400 transition-all duration-300" />
+              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-indigo-400 transition-all duration-300" />
               <input 
                 type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={activeTabObj.query || ''}
+                onChange={(e) => updateActiveTab({ query: e.target.value })}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    executeSearch(searchQuery);
+                    executeSearch(activeTabObj.query);
                     e.target.blur();
                   }
                 }}
                 placeholder="Search the decentralized web..." 
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all font-medium text-lg placeholder:text-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-14 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all font-medium text-base placeholder:text-white/20"
               />
               
-              {searchQuery && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSearchQuery('');
-                  }}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95"
-                >
-                  <X size={18} />
-                </button>
-              )}
+              <button 
+                onClick={() => updateActiveTab({ isBookmarked: !activeTabObj.isBookmarked })}
+                className="absolute right-5 top-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                <Star size={18} className={activeTabObj.isBookmarked ? "text-yellow-400 fill-yellow-400" : "text-white/20"} />
+              </button>
 
               {/* Autocomplete Dropdown */}
-              {showSuggestions && searchQuery.trim().length > 0 && (
+              {showSuggestions && activeTabObj.query && activeTabObj.query.trim().length > 0 && (
                 <div className="absolute top-16 left-0 w-full glass rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden z-50 border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div 
-                    className="px-6 py-4 hover:bg-white/5 cursor-pointer flex items-center gap-4 transition-colors border-b border-white/5"
-                    onClick={() => executeSearch(searchQuery)}
-                  >
-                    {searchQuery.includes('.') || searchQuery.startsWith('http') ? (
-                      <Globe size={16} className="text-white/40" />
-                    ) : (
-                      <Search size={16} className="text-white/40" />
-                    )}
-                    <span className="text-base font-medium text-white/80">
-                      <span className="text-indigo-400 font-bold">{searchQuery}</span>
-                      <span className="text-white/30 ml-3 text-sm italic">
-                        - {searchQuery.includes('.') || searchQuery.startsWith('http') ? 'Jump to URL' : 'Private Search'}
-                      </span>
-                    </span>
-                  </div>
-
-                  {suggestions.map((suggestion, index) => (
+                  <div className="flex flex-col">
+                    {suggestions.map((suggestion, index) => (
                     <div 
                       key={index}
                       className="px-6 py-4 hover:bg-white/5 cursor-pointer flex items-center gap-5 transition-colors border-b border-white/5 last:border-0"
                       onClick={() => {
-                        setSearchQuery(suggestion.phrase);
+                        updateActiveTab({ query: suggestion.phrase });
                         executeSearch(suggestion.phrase);
                       }}
                     >
@@ -627,7 +750,8 @@ function App() {
                         )}
                       </div>
                     </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -663,110 +787,112 @@ function App() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar relative z-10">
-          {activeDApp ? (
-            <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <div className="glass-card mb-8 p-4 rounded-3xl flex items-center justify-between border-indigo-500/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-bold tracking-wide text-white/60">SECURE CONNECTION ESTABLISHED via PROXY CHANNEL</span>
-                </div>
-                <button 
-                  onClick={() => window.open(activeDApp.url, '_blank')}
-                  className="group py-2 px-4 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-400 hover:text-white transition-all duration-300 font-bold text-sm flex items-center gap-2"
-                >
-                  Bypass Browser <ExternalLink size={16} />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-6">
-                  <button 
-                    onClick={() => setActiveDApp(null)} 
-                    className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center group border-white/10"
-                  >
-                    <ChevronRight size={32} className="rotate-180 group-hover:-translate-x-1 transition-transform text-white/40 group-hover:text-white" />
-                  </button>
-                  <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-4xl shadow-2xl animate-float">
-                    {activeDApp.icon}
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-black tracking-tight mb-1">{activeDApp.name}</h2>
-                    <p className="text-base text-white/40 font-medium tracking-wide">{activeDApp.url}</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
-                    <Shield size={24} className="text-white/40" />
-                  </button>
-                  <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
-                    <Globe size={24} className="text-white/40" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 glass rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 relative bg-[#12141a]">
-                {iframeStatus === 'loading' && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl z-20">
-                    <div className="w-20 h-20 relative">
-                        <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          {tabs.map(tab => (
+            <div key={tab.id} className={tab.id === activeTabId ? "block h-full" : "hidden"}>
+              {tab.dapp ? (
+                <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <div className="glass-card mb-8 p-4 rounded-3xl flex items-center justify-between border-indigo-500/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-bold tracking-wide text-white/60">SECURE CONNECTION ESTABLISHED via PROXY CHANNEL</span>
                     </div>
-                    <p className="mt-8 text-xl font-bold tracking-widest uppercase text-white/80">Securing environment</p>
-                    <p className="mt-2 text-sm text-white/30 font-medium italic">Resolving cross-origin restrictions...</p>
+                    <button 
+                      onClick={() => window.open(tab.dapp.url, '_blank')}
+                      className="group py-2 px-4 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-400 hover:text-white transition-all duration-300 font-bold text-sm flex items-center gap-2"
+                    >
+                      Bypass Browser <ExternalLink size={16} />
+                    </button>
                   </div>
-                )}
 
-                {iframeStatus === 'blocked' ? (
-                  <iframe 
-                    src={`${API_URL}/search/proxy?url=${encodeURIComponent(activeDApp.url)}`} 
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                    className="w-full h-full border-none bg-white opacity-95" 
-                    title={`${activeDApp.name} (Proxied)`} 
-                    onLoad={() => setIframeStatus('loaded')}
-                  />
-                ) : (
-                  <iframe 
-                    src={activeDApp.url} 
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                    className="w-full h-full border-none bg-white opacity-95" 
-                    title={activeDApp.name} 
-                    onLoad={() => setIframeStatus('loaded')}
-                  />
-                )}
-              </div>
-            </div>
-          ) : activeTab === 'search' ? (
-             <section className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto pb-20">
-               <div className="text-center mb-16">
-                  <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-80">SURF RESULTS</h1>
-                  <p className="text-white/40 text-lg font-medium tracking-wide">Secure, private indexed results for <span className="text-indigo-400">"{searchQuery}"</span></p>
-               </div>
-               
-               {isSearching ? (
-                 <div className="py-32 flex flex-col items-center">
-                    <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-                    <p className="mt-8 text-white/30 font-bold uppercase tracking-[0.3em]">Querying Networks</p>
-                 </div>
-               ) : searchError ? (
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-6">
+                      <button 
+                        onClick={() => updateActiveTab({ dapp: null, type: 'explore' })} 
+                        className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center group border-white/10"
+                      >
+                        <ChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform text-white/40 group-hover:text-white" />
+                      </button>
+                      <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-4xl shadow-2xl animate-float">
+                        {tab.dapp.icon}
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black tracking-tight mb-1">{tab.dapp.name}</h2>
+                        <p className="text-base text-white/40 font-medium tracking-wide">{tab.dapp.url}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
+                        <Shield size={24} className="text-white/40" />
+                      </button>
+                      <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
+                        <Globe size={24} className="text-white/40" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 glass rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 relative bg-[#12141a]">
+                    {iframeStatus === 'loading' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl z-20">
+                        <div className="w-20 h-20 relative">
+                            <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <p className="mt-8 text-xl font-bold tracking-widest uppercase text-white/80">Securing environment</p>
+                        <p className="mt-2 text-sm text-white/30 font-medium italic">Resolving cross-origin restrictions...</p>
+                      </div>
+                    )}
+
+                    {iframeStatus === 'blocked' ? (
+                      <iframe 
+                        src={`${API_URL}/search/proxy?url=${encodeURIComponent(tab.dapp.url)}`} 
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                        className="w-full h-full border-none bg-white opacity-95" 
+                        title={`${tab.dapp.name} (Proxied)`} 
+                        onLoad={() => setIframeStatus('loaded')}
+                      />
+                    ) : (
+                      <iframe 
+                        src={tab.dapp.url} 
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                        className="w-full h-full border-none bg-white opacity-95" 
+                        title={tab.dapp.name} 
+                        onLoad={() => setIframeStatus('loaded')}
+                      />
+                    )}
+                  </div>
+                </div>
+              ) : tab.type === 'search' ? (
+                 <section className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto pb-20">
+                   <div className="text-center mb-16">
+                      <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-80">SURF RESULTS</h1>
+                      <p className="text-white/40 text-lg font-medium tracking-wide">Secure, private indexed results for <span className="text-indigo-400">"{tab.query}"</span></p>
+                   </div>
+                   
+                   {tab.isSearching ? (
+                     <div className="py-32 flex flex-col items-center">
+                        <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                        <p className="mt-8 text-white/30 font-bold uppercase tracking-[0.3em]">Querying Networks</p>
+                     </div>
+                   ) : tab.searchError ? (
                  <div className="py-20 text-center glass-card rounded-[3rem] p-12">
                    <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Shield size={40} className="text-red-400" />
                    </div>
-                   <p className="text-xl text-white/80 font-bold mb-8 italic">{searchError}</p>
+                   <p className="text-xl text-white/80 font-bold mb-8 italic">{tab.searchError || 'Search failed'}</p>
                    <button 
-                     onClick={() => executeSearch(searchQuery)}
+                     onClick={() => executeSearch(tab.query)}
                      className="px-10 py-4 bg-white/5 hover:bg-indigo-600 rounded-2xl transition-all border border-white/10 font-bold"
                    >
                      Re-Initialize Search
                    </button>
                  </div>
-               ) : searchResults.length > 0 ? (
+               ) : tab.searchResults.length > 0 ? (
                  <div className="grid grid-cols-1 gap-6">
-                   {searchResults.map((result, idx) => (
+                   {tab.searchResults.map((result, idx) => (
                       <div 
                          key={idx}
                          onClick={() => {
-                           setActiveDApp({ id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' });
+                           updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' } });
                          }}
                          className="group glass-card p-8 rounded-[2rem] cursor-pointer"
                       >
@@ -787,7 +913,7 @@ function App() {
                  </div>
                )}
              </section>
-          ) : activeTab === 'explore' ? (
+          ) : tab.type === 'explore' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="relative text-center max-w-3xl mx-auto">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black tracking-widest uppercase mb-8">
@@ -808,7 +934,7 @@ function App() {
                   { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
                   { title: 'NFT Trends', url: 'https://superrare.com', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
-                  <div key={i} onClick={() => setActiveDApp({ id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
+                  <div key={i} onClick={() => updateActiveTab({ dapp: { id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc } })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
                     <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all">{item.icon}</div>
                     <h3 className="text-xl font-black mb-2 tracking-tight group-hover:text-indigo-400 transition-colors uppercase">{item.title}</h3>
                     <p className="text-sm text-white/30 font-bold italic">{item.desc}</p>
@@ -824,13 +950,13 @@ function App() {
                       <h2 className="text-3xl font-black tracking-tighter uppercase mb-2">Essential Protocols</h2>
                       <p className="text-white/30 font-bold italic">Handpicked elite decentralized applications.</p>
                    </div>
-                   <button onClick={() => setActiveTab('dapps')} className="flex items-center gap-3 text-indigo-400 font-black tracking-widest uppercase text-xs hover:text-white transition-colors group">
+                   <button onClick={() => updateActiveTab({ type: '' })} className="flex items-center gap-3 text-indigo-400 font-black tracking-widest uppercase text-xs hover:text-white transition-colors group">
                      View Full Grid <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                    </button>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   {DAPPS.slice(0, 4).map((dapp) => (
-                    <div key={dapp.id} onClick={() => setActiveDApp(dapp)} className="flex flex-col items-center text-center group cursor-pointer">
+                    <div key={dapp.id} onClick={() => updateActiveTab({ dapp: dapp })} className="flex flex-col items-center text-center group cursor-pointer">
                       <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 group-hover:-translate-y-2 transition-all shadow-xl group-hover:shadow-indigo-500/20">
                         {dapp.icon}
                       </div>
@@ -862,7 +988,7 @@ function App() {
                 </div>
               </div>
             </section>
-          ) : activeTab === 'dapps' ? (
+          ) : tab.type === 'dapps' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="flex flex-col lg:flex-row items-end justify-between gap-6 border-b border-white/5 pb-10">
                 <div>
@@ -880,7 +1006,7 @@ function App() {
                     key={dapp.id} 
                     className="group glass-card p-10 rounded-[3rem] relative overflow-hidden cursor-pointer"
                     onClick={() => {
-                      setActiveDApp(dapp);
+                      updateActiveTab({ dapp: dapp, name: dapp.name });
                       if (walletAddress) {
                         fetch(`${API_URL}/rewards/claim`, {
                           method: 'POST',
@@ -909,7 +1035,7 @@ function App() {
                 ))}
               </div>
             </section>
-          ) : activeTab === 'rewards' ? (
+          ) : tab.type === 'rewards' ? (
              <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20 relative">
                 <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
                 
@@ -961,7 +1087,7 @@ function App() {
                          <p className="text-sm text-white/40 font-bold relative z-10">Passive point generation enabled. Browse the ecosystem to automatically stack points over time.</p>
                          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative z-10">Active: +1.5x Multiplier Enabled</div>
                          <button 
-                           onClick={() => setActiveTab('dapps')}
+                           onClick={() => updateActiveTab({ type: '' })}
                            className="w-full py-3 glass rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 hover:text-white transition-all border-white/10 mt-2 relative z-10 flex items-center justify-center gap-2"
                          >
                            Explore DApps
@@ -1028,7 +1154,7 @@ function App() {
                    </div>
                 </div>
              </section>
-          ) : activeTab === 'wtf-zone' ? (
+          ) : tab.type === 'wtf-zone' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
                <div className="text-center mb-16 relative">
                   <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-600/10 blur-[100px] -z-10"></div>
@@ -1074,7 +1200,7 @@ function App() {
                   </div>
                </div>
             </section>
-          ) : activeTab === 'education' ? (
+          ) : tab.type === 'education' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="text-center mb-16 relative">
                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-[100px] -z-10"></div>
@@ -1095,35 +1221,35 @@ function App() {
                     description="The new version of the internet where you own your own data, identity, and digital assets instead of relying on a few big companies."
                     icon={<Globe size={24} className="text-indigo-400" />}
                     url="https://en.wikipedia.org/wiki/Web3"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-web3', name: 'Web3 Guide', url, icon: '🌐', category: 'Education' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url, icon: '🌐', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What is Blockchain?" 
                     description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
                     icon={<Layers size={24} className="text-emerald-400" />}
                     url="https://en.wikipedia.org/wiki/Blockchain"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: '⛓️', category: 'Education' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: '⛓️', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What is a Crypto Wallet?" 
                     description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
                     icon={<Wallet size={24} className="text-purple-400" />}
                     url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-wallet', name: 'Wallet Essentials', url, icon: '👛', category: 'Education' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-wallet', name: 'Wallet Essentials', url, icon: '👛', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What are Smart Contracts?" 
                     description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
                     icon={<Cpu size={24} className="text-yellow-400" />}
                     url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-sc', name: 'Smart Contract Hub', url, icon: '📜', category: 'Education' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-sc', name: 'Smart Contract Hub', url, icon: '📜', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What are dApps?" 
                     description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
                     icon={<Zap size={24} className="text-indigo-400" />}
                     url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-dapps', name: 'dApp Essentials', url, icon: '🏗️', category: 'Education' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-dapps', name: 'dApp Essentials', url, icon: '🏗️', category: 'Education' } })}
                   />
                 </div>
               </div>
@@ -1141,35 +1267,35 @@ function App() {
                     description="A decentralized exchange (DEX) where you can swap tokens directly from your wallet without needing a central middleman."
                     tag="DeFi Exchange"
                     url="https://app.uniswap.org"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-uniswap', name: 'Uniswap', url, icon: '🦄', category: 'dApp' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-uniswap', name: 'Uniswap', url, icon: '🦄', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="OpenSea" 
                     description="The largest marketplace for digital collectibles (NFTs). You can buy, sell, or discover unique digital art and music here."
                     tag="NFT Marketplace"
                     url="https://opensea.io"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-opensea', name: 'OpenSea', url, icon: '⛵', category: 'dApp' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-opensea', name: 'OpenSea', url, icon: '⛵', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Aave" 
                     description="A protocol where you can lend or borrow crypto. It lets users earn interest on their deposits or take out loans instantly."
                     tag="Lending & Borrowing"
                     url="https://app.aave.com"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-aave', name: 'Aave', url, icon: '👻', category: 'dApp' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-aave', name: 'Aave', url, icon: '👻', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Lens Protocol" 
                     description="A decentralized social network graph. It allows users to own their social profile and content instead of the platform owning it."
                     tag="Decentralized Social"
                     url="https://www.lens.xyz/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-lens', name: 'Lens', url, icon: '🌿', category: 'dApp' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-lens', name: 'Lens', url, icon: '🌿', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Friend.tech" 
                     description="A social app that lets you buy and sell 'keys' of social profiles, giving you access to private chats and community perks."
                     tag="Social Finance"
                     url="https://www.friend.tech/"
-                    onLearnMore={(url) => setActiveDApp({ id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' } })}
                   />
                 </div>
               </div>
@@ -1183,7 +1309,7 @@ function App() {
                     </p>
                     <div className="flex gap-6">
                        <button 
-                         onClick={() => setActiveDApp({ id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '🌐', category: 'Education' })}
+                         onClick={() => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '🌐', category: 'Education' } })}
                          className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95"
                        >
                           START JOURNEY
@@ -1202,7 +1328,7 @@ function App() {
                  </div>
               </div>
             </section>
-          ) : activeTab === 'security' ? (
+          ) : tab.type === 'security' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="text-center mb-16 relative">
                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 blur-[100px] -z-10"></div>
@@ -1224,7 +1350,7 @@ function App() {
                     icon={<ShieldCheck size={24} className="text-red-400" />}
                     tag="Active Defense"
                     url="https://en.wikipedia.org/wiki/Internet_privacy"
-                    onLearnMore={(url) => setActiveDApp({ id: 'sec-privacy', name: 'Privacy Protocol', url, icon: '🛡️', category: 'Security' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-privacy', name: 'Privacy Protocol', url, icon: '🛡️', category: 'Security' } })}
                   />
                   <EduCard 
                     title="Wallet Security" 
@@ -1232,7 +1358,7 @@ function App() {
                     icon={<Lock size={24} className="text-blue-400" />}
                     tag="Key Protection"
                     url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet#Security"
-                    onLearnMore={(url) => setActiveDApp({ id: 'sec-wallet', name: 'Wallet Security', url, icon: '🔐', category: 'Security' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-wallet', name: 'Wallet Security', url, icon: '🔐', category: 'Security' } })}
                   />
                   <EduCard 
                     title="dApp Safety Check" 
@@ -1240,7 +1366,7 @@ function App() {
                     icon={<Activity size={24} className="text-emerald-400" />}
                     tag="Verification"
                     url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => setActiveDApp({ id: 'sec-dapps', name: 'dApp Verification', url, icon: '✅', category: 'Security' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-dapps', name: 'dApp Verification', url, icon: '✅', category: 'Security' } })}
                   />
                   <EduCard 
                     title="Smart Contract Alerts" 
@@ -1248,7 +1374,7 @@ function App() {
                     icon={<AlertTriangle size={24} className="text-yellow-400" />}
                     tag="Guardianship"
                     url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => setActiveDApp({ id: 'sec-sc', name: 'Contract Alerts', url, icon: '📜', category: 'Security' })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-sc', name: 'Contract Alerts', url, icon: '📜', category: 'Security' } })}
                   />
                   <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5 col-span-1 md:col-span-2">
                     <div className="flex items-center gap-4">
@@ -1271,7 +1397,7 @@ function App() {
                 </div>
               </div>
             </section>
-          ) : activeTab === 'settings' ? (
+          ) : tab.type === 'settings' ? (
             <section className="animate-in fade-in duration-700 max-w-6xl mx-auto pb-20">
 
               {/* Hero Banner */}
@@ -1400,7 +1526,7 @@ function App() {
                   {/* Danger Zone */}
                   <div className="glass-card rounded-[2.5rem] p-7 border-red-500/5 hover:border-red-500/15 transition-all">
                     <h4 className="text-xs font-black uppercase tracking-[0.3em] text-red-400 mb-5 flex items-center gap-2"><Shield size={12} /> Danger Zone</h4>
-                    <button onClick={() => { if(window.ethereum) window.ethereum.removeAllListeners(); localStorage.removeItem('web3_walletAddress'); setWalletAddress(''); setIsWalletGateOpen(true); setActiveTab('explore'); setActiveDApp(null); }}
+                    <button onClick={() => { if(window.ethereum) window.ethereum.removeAllListeners(); localStorage.removeItem('web3_walletAddress'); setWalletAddress(''); setIsWalletGateOpen(true); updateActiveTab({ type: '' }); updateActiveTab({ dapp: null }); }}
                       className="w-full py-3 mb-3 text-xs font-black uppercase tracking-[0.2em] text-white/40 hover:text-amber-400 hover:bg-amber-400/10 rounded-xl border border-white/5 hover:border-amber-400/20 transition-all flex items-center justify-center gap-2">
                       <LogOut size={12} /> Disconnect
                     </button>
@@ -1495,7 +1621,7 @@ function App() {
                 <h3 className="text-5xl font-black mb-4 tracking-tighter uppercase italic opacity-20">Protocol Offline</h3>
                 <p className="font-bold text-white/10 tracking-[0.4em] uppercase text-sm">Awaiting Network Sync</p>
             </div>
-          )}
+          ))}
         </div>
       </main>
 
@@ -1581,7 +1707,7 @@ function App() {
                     {activeQuests.includes('scholar') ? (
                        <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
                     ) : (
-                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); setActiveTab('education'); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
+                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
                     )}
                  </div>
                )}
@@ -1596,7 +1722,7 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('dapps'); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
+                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
                  </div>
                )}
  
@@ -1610,7 +1736,7 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('wtf-zone'); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
+                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: '' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
                  </div>
                )}
              </div>
