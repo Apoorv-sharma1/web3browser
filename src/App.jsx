@@ -56,7 +56,15 @@ const DAPPS = [
   { id: 19, name: 'Jupiter', url: 'https://jup.ag', icon: '🪐', category: 'Solana DeFi', description: 'Best swap rates on Solana' },
   { id: 20, name: 'Raydium', url: 'https://raydium.io', icon: '☀️', category: 'Solana DeFi', description: 'Solana AMM and ecosystem' },
   { id: 21, name: 'Arbitrum Bridge', url: 'https://bridge.arbitrum.io', icon: '🔵', category: 'Bridge', description: 'Official Arbitrum bridge' },
-  { id: 22, name: 'Etherscan', url: 'https://etherscan.io', icon: '📑', category: 'Explorer', description: 'Ethereum blockchain explorer' }
+  { id: 22, name: 'Etherscan', url: 'https://etherscan.io', icon: '📑', category: 'Explorer', description: 'Ethereum blockchain explorer' },
+  { id: 23, name: 'CoinGecko', url: 'https://coingecko.com', icon: '🦎', category: 'Analytics', description: 'Live crypto prices & market data' },
+  { id: 24, name: 'CoinMarketCap', url: 'https://coinmarketcap.com', icon: '📊', category: 'Analytics', description: 'Crypto market cap rankings' },
+  { id: 25, name: 'Zora', url: 'https://zora.co', icon: '🔮', category: 'NFT', description: 'Create and collect onchain' },
+  { id: 26, name: 'Dune Analytics', url: 'https://dune.com', icon: '📉', category: 'Analytics', description: 'Blockchain data dashboards' },
+  { id: 27, name: 'Polygon', url: 'https://polygon.technology', icon: '🔷', category: 'Layer 2', description: 'Ethereum scaling solution' },
+  { id: 28, name: 'Optimism', url: 'https://optimism.io', icon: '🔴', category: 'Layer 2', description: 'Fast low-cost Ethereum L2' },
+  { id: 29, name: 'Solscan', url: 'https://solscan.io', icon: '🌞', category: 'Explorer', description: 'Solana blockchain explorer' },
+  { id: 30, name: 'DeFi Llama', url: 'https://defillama.com', icon: '🦙', category: 'Analytics', description: 'DeFi TVL and protocol data' }
 ];
 
 const API_URL = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== 'https://your-backend-url.vercel.app' 
@@ -111,7 +119,9 @@ function App() {
         'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
         'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com',
         'geeksforgeeks.org', 'wikipedia.org', 'en.wikipedia.org', 'investopedia.com', 'medium.com',
-        'hela.network', 'magiceden.io', 'helalabs.com', 'foundation.app'
+        'hela.network', 'magiceden.io', 'helalabs.com', 'foundation.app',
+        'coingecko.com', 'coinmarketcap.com', 'zora.co', 'dune.com',
+        'polygon.technology', 'optimism.io', 'solscan.io', 'defillama.com'
       ];
       const domain = activeDApp.url.toLowerCase();
       
