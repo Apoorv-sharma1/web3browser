@@ -49,6 +49,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { SnakeGame, TetrisGame, SpaceBlasterGame, TicTacToe } from './components/Games';
+import { INTERNAL_CONTENT } from './data/internalContent';
 
 // Mock dApps Data
 const DAPPS = [
@@ -246,7 +247,30 @@ function App() {
   
   // Refactored helper to update active tab
   const updateActiveTab = (updates) => {
-    setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, ...updates } : t));
+    setTabs(prev => prev.map(t => {
+      if (t.id === activeTabId) {
+        const newTab = { ...t, ...updates };
+        // If type or dapp changes, add to history
+        if (updates.type || updates.dapp) {
+           let query = updates.query || (updates.dapp ? updates.dapp.url : t.query);
+           if (updates.type === 'builtin-content') query = `internal://${updates.contentId}`;
+           
+           const historyEntry = { 
+             type: updates.type === 'search' ? 'search' : 'url', 
+             query: query
+           };
+           // Avoid immediate duplicates
+           if (!t.history.length || t.history[t.historyIndex]?.query !== historyEntry.query) {
+             const newHistory = t.history.slice(0, t.historyIndex + 1);
+             newHistory.push(historyEntry);
+             newTab.history = newHistory;
+             newTab.historyIndex = newHistory.length - 1;
+           }
+        }
+        return newTab;
+      }
+      return t;
+    }));
   };
 
   const addTab = (type = 'explore', url = '', name = 'New Tab') => {
@@ -1459,6 +1483,11 @@ function App() {
                    </div>
                 </div>
              </section>
+          ) : tab.type === 'builtin-content' ? (
+             <BuiltinContentView 
+               content={INTERNAL_CONTENT[tab.contentId]} 
+               onBack={() => updateActiveTab({ type: INTERNAL_CONTENT[tab.contentId]?.category === 'Education' ? 'education' : 'security' })} 
+             />
           ) : tab.type === 'wtf-zone' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
                <div className="text-center mb-16 relative">
@@ -1541,36 +1570,51 @@ function App() {
                     title="What is Web3?" 
                     description="The new version of the internet where you own your own data, identity, and digital assets instead of relying on a few big companies."
                     icon={<Globe size={24} className="text-indigo-400" />}
-                    url="https://en.wikipedia.org/wiki/Web3"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url, icon: '🌐', category: 'Education' } })}
+                    url="edu-web3"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Web3 Guide' });
+                      claimReward('web_search', 2); // Small reward for learning
+                    }}
                   />
                   <EduCard 
                     title="What is Blockchain?" 
                     description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
                     icon={<Layers size={24} className="text-emerald-400" />}
-                    url="https://en.wikipedia.org/wiki/Blockchain"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: '⛓️', category: 'Education' } })}
+                    url="edu-blockchain"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Blockchain Guide' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="What is a Crypto Wallet?" 
                     description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
                     icon={<Wallet size={24} className="text-purple-400" />}
-                    url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-wallet', name: 'Wallet Essentials', url, icon: '👛', category: 'Education' } })}
+                    url="edu-wallet"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Wallet Essentials' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="What are Smart Contracts?" 
                     description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
                     icon={<Cpu size={24} className="text-yellow-400" />}
-                    url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-sc', name: 'Smart Contract Hub', url, icon: '📜', category: 'Education' } })}
+                    url="edu-sc"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Smart Contract Hub' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="What are dApps?" 
                     description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
                     icon={<Zap size={24} className="text-indigo-400" />}
-                    url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-dapps', name: 'dApp Essentials', url, icon: '🎮', category: 'Education' } })}
+                    url="edu-dapps"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'dApp Essentials' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                 </div>
               </div>
@@ -1670,32 +1714,44 @@ function App() {
                     description="Our browser automatically neutralizes ads, trackers, and malicious scripts, ensuring your decentralized journey remains private and invisible to data harvesters."
                     icon={<ShieldCheck size={24} className="text-red-400" />}
                     tag="Active Defense"
-                    url="https://en.wikipedia.org/wiki/Internet_privacy"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-privacy', name: 'Privacy Protocol', url, icon: <ShieldCheck size={24} className="text-red-400" />, category: 'Security' } })}
+                    url="sec-privacy"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Privacy Protocol' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="Wallet Security" 
                     description="Safely manage connections with MetaMask or WalletConnect. View balances and networks while maintaining 100% sovereignty over your private keys."
                     icon={<Lock size={24} className="text-blue-400" />}
                     tag="Key Protection"
-                    url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet#Security"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-wallet', name: 'Wallet Security', url, icon: <Lock size={24} className="text-blue-400" />, category: 'Security' } })}
+                    url="sec-wallet"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Wallet Security' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="dApp Safety Check" 
                     description="Every protocol is scanned for known vulnerabilities. Our system provides instant status indicators: Verified, Unknown, or Warning."
                     icon={<Activity size={24} className="text-emerald-400" />}
                     tag="Verification"
-                    url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-dapps', name: 'dApp Verification', url, icon: <Activity size={24} className="text-emerald-400" />, category: 'Security' } })}
+                    url="sec-dapps"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'dApp Verification' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <EduCard 
                     title="Smart Contract Alerts" 
                     description="Receive instant alerts when a dApp requests wallet or token permissions. Always review the scope of access before approving any transaction."
                     icon={<AlertTriangle size={24} className="text-yellow-400" />}
                     tag="Guardianship"
-                    url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'sec-sc', name: 'Smart Contract Alerts', url, icon: <AlertTriangle size={24} className="text-yellow-400" />, category: 'Security' } })}
+                    url="sec-sc"
+                    onLearnMore={(id) => {
+                      updateActiveTab({ type: 'builtin-content', contentId: id, name: 'Smart Contract Alerts' });
+                      claimReward('web_search', 2);
+                    }}
                   />
                   <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5 col-span-1 md:col-span-2">
                     <div className="flex items-center gap-4">
@@ -2501,6 +2557,66 @@ function EduCard({ title, description, icon, tag, url, onLearnMore }) {
         className="mt-auto pt-8 flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white/10 group-hover:text-indigo-400 transition-colors"
       >
         Learn More <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+      </div>
+    </div>
+  );
+}
+
+function BuiltinContentView({ content, onBack }) {
+  if (!content) return null;
+  
+  return (
+    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-4xl mx-auto pb-20">
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={onBack}
+          className="w-12 h-12 glass rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all active:scale-95 group"
+        >
+          <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+        </button>
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 italic">PROTOCOL / {content.category} / INTERNAL_DOCS</span>
+      </div>
+
+      <div className="relative">
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <h1 className="text-7xl font-black tracking-tighter uppercase italic leading-none mb-4">{content.title}</h1>
+        <p className="text-xl font-bold text-indigo-400 uppercase tracking-widest">{content.subtitle}</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-12 mt-16">
+        {content.sections.map((section, idx) => (
+          <div key={idx} className="glass-card p-12 rounded-[3.5rem] border-white/5 space-y-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/3 rounded-bl-[100%] transition-transform group-hover:scale-110"></div>
+            <h2 className="text-3xl font-black tracking-tight uppercase italic flex items-center gap-4">
+              <div className="w-1.5 h-8 bg-indigo-500 rounded-full"></div>
+              {section.heading}
+            </h2>
+            <p className="text-lg text-white/60 leading-relaxed font-medium">
+              {section.text}
+            </p>
+            {section.bullets && (
+              <ul className="space-y-4 pt-4">
+                {section.bullets.map((bullet, bIdx) => (
+                  <li key={bIdx} className="flex items-start gap-4">
+                    <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0 mt-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-glow"></div>
+                    </div>
+                    <span className="text-base font-bold text-white/40">{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-12 text-center">
+        <button 
+          onClick={onBack}
+          className="px-10 py-5 glass rounded-[2rem] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10 active:scale-95 text-xs text-white/40 hover:text-white"
+        >
+          Return to Registry
+        </button>
       </div>
     </div>
   );
