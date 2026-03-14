@@ -255,7 +255,7 @@ function App() {
       type, 
       url, 
       name, 
-      icon: 'ðŸŒ', 
+      icon: '🌐', 
       history: [], 
       historyIndex: -1, 
       isBookmarked: false,
@@ -447,7 +447,7 @@ function App() {
       const url = query.startsWith('http') ? query : `https://${query}`;
       updateActiveTab({ 
         query: query,
-        dapp: { id: 'custom', name: url, url: url, icon: 'ðŸŒ', category: 'Web' },
+        dapp: { id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' },
         type: 'explore'
       });
     } else {
@@ -472,6 +472,10 @@ function App() {
             isSearching: false,
             searchError: data.error ? (data.message || data.error) : null
           });
+          // Reward user for search contribution
+          if (walletAddress) {
+            await claimReward('dapp_interaction', 1);
+          }
         } else {
           updateActiveTab({ 
             searchResults: [],
@@ -608,16 +612,8 @@ function App() {
         // Sync with Hela Economic Engine (Gatekeeper close)
         setIsWalletGateOpen(false);
 
-        // Fetch user rewards
-        fetch(`${API_URL}/rewards/${address}`)
-          .then(res => res.json())
-          .then(data => {
-            const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
-            const totalHelaReward = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
-            setPoints(totalPoints);
-            setHelaBalance(totalHelaReward.toFixed(2));
-            setRewardHistory(data);
-          });
+        // Fetch lifetime balance
+        await refreshBalance();
 
       } catch (err) {
         console.error('Wallet connection failed', err);
@@ -883,7 +879,7 @@ function App() {
                       historyIndex: newIndex,
                       query: prevHistory.query,
                       type: prevHistory.type === 'url' ? 'explore' : 'search',
-                      dapp: prevHistory.type === 'url' ? { id: 'custom', name: prevHistory.query, url: prevHistory.query.startsWith('http') ? prevHistory.query : `https://${prevHistory.query}`, icon: 'ðŸŒ', category: 'Web' } : null,
+                      dapp: prevHistory.type === 'url' ? { id: 'custom', name: prevHistory.query, url: prevHistory.query.startsWith('http') ? prevHistory.query : `https://${prevHistory.query}`, icon: '🌐', category: 'Web' } : null,
                       name: prevHistory.type === 'url' ? prevHistory.query : `Search: ${prevHistory.query}`
                     });
                   }
@@ -902,7 +898,7 @@ function App() {
                       historyIndex: newIndex,
                       query: nextHistory.query,
                       type: nextHistory.type === 'url' ? 'explore' : 'search',
-                      dapp: nextHistory.type === 'url' ? { id: 'custom', name: nextHistory.query, url: nextHistory.query.startsWith('http') ? nextHistory.query : `https://${nextHistory.query}`, icon: 'ðŸŒ', category: 'Web' } : null,
+                      dapp: nextHistory.type === 'url' ? { id: 'custom', name: nextHistory.query, url: nextHistory.query.startsWith('http') ? nextHistory.query : `https://${nextHistory.query}`, icon: '🌐', category: 'Web' } : null,
                       name: nextHistory.type === 'url' ? nextHistory.query : `Search: ${nextHistory.query}`
                     });
                   }
@@ -1078,12 +1074,30 @@ function App() {
                       </div>
                     )}
 
+                    {iframeStatus === 'blocked' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07090c] p-10 text-center z-10 animate-in fade-in duration-500">
+                         <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center mb-8 border border-red-500/20 shadow-2xl">
+                            <ShieldAlert size={48} className="text-red-400" />
+                         </div>
+                         <h3 className="text-4xl font-black mb-4 tracking-tighter uppercase italic text-white/90">Protocol Offline</h3>
+                         <p className="max-w-md text-white/40 text-sm font-bold mb-8 leading-relaxed">
+                            The target node has restricted cross-origin neural syncing (X-Frame-Options). To maintain 100% security, we recommend launching in a secure external sandbox.
+                         </p>
+                         <button 
+                           onClick={() => window.open(tab.dapp.url, '_blank')}
+                           className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl shadow-indigo-600/30 active:scale-95"
+                         >
+                            Establish External Breach
+                         </button>
+                      </div>
+                    )}
+
                     {tab.dapp.url.includes('helalabs.com') || tab.dapp.url.includes('hela.network') ? (
                        <iframe 
                          key={iframeKey}
                          src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
                          sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                         className="w-full h-full border-none bg-white opacity-95" 
+                         className={`w-full h-full border-none bg-white transition-opacity duration-700 ${iframeStatus === 'loaded' ? 'opacity-95' : 'opacity-0'}`} 
                          title={`${tab.dapp.name} (Proxied)`} 
                          onLoad={() => setIframeStatus('loaded')}
                        />
@@ -1092,7 +1106,7 @@ function App() {
                          key={iframeKey}
                          src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`}
                          sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                         className="w-full h-full border-none bg-white opacity-95" 
+                         className={`w-full h-full border-none bg-white transition-opacity duration-700 ${iframeStatus === 'loaded' ? 'opacity-95' : 'opacity-0'}`}
                          title={tab.dapp.name} 
                          onLoad={() => setIframeStatus('loaded')}
                        />
@@ -1130,7 +1144,7 @@ function App() {
                       <div 
                          key={idx}
                          onClick={() => {
-                           updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: 'ðŸŒ', category: 'Search' } });
+                           updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' } });
                          }}
                          className="group glass-card p-8 rounded-[2rem] cursor-pointer"
                       >
@@ -1172,7 +1186,7 @@ function App() {
                   { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
                   { title: 'NFT Trends', url: 'https://superrare.com', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
-                  <div key={i} onClick={() => updateActiveTab({ dapp: { id: `explore-${i}`, name: item.title, url: item.url, icon: 'ðŸŒ', category: item.desc } })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
+                  <div key={i} onClick={() => updateActiveTab({ dapp: { id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc } })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
                     <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all">{item.icon}</div>
                     <h3 className="text-xl font-black mb-2 tracking-tight group-hover:text-indigo-400 transition-colors uppercase">{item.title}</h3>
                     <p className="text-sm text-white/30 font-bold italic">{item.desc}</p>
@@ -1196,7 +1210,7 @@ function App() {
                   {DAPPS.slice(0, 4).map((dapp) => (
                     <div key={dapp.id} onClick={() => updateActiveTab({ dapp: dapp })} className="flex flex-col items-center text-center group cursor-pointer">
                       <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 group-hover:-translate-y-2 transition-all shadow-xl group-hover:shadow-indigo-500/20">
-                        {dapp.icon}
+                        {dapp.icon || '🌐'}
                       </div>
                       <span className="text-base font-black uppercase tracking-tight group-hover:text-indigo-400 transition-colors">{dapp.name}</span>
                     </div>
@@ -1243,14 +1257,10 @@ function App() {
                   <div 
                     key={dapp.id} 
                     className="group glass-card p-10 rounded-[3rem] relative overflow-hidden cursor-pointer"
-                    onClick={() => {
+                    onClick={async () => {
                       updateActiveTab({ dapp: dapp, name: dapp.name });
                       if (walletAddress) {
-                        fetch(`${API_URL}/rewards/claim`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ wallet_address: walletAddress })
-                        }).then(res => res.json()).then(data => setPoints(p => p + (data.points || 0)));
+                        await claimReward('dapp_interaction', 1);
                       }
                     }}
                   >
@@ -1258,7 +1268,7 @@ function App() {
                     
                     <div className="flex items-start justify-between mb-10">
                       <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl border-white/10 group-hover:shadow-indigo-500/20">
-                        {dapp.icon || 'ðŸŒ'}
+                        {dapp.icon || '🌐'}
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 bg-indigo-400/10 px-4 py-2 rounded-full border border-indigo-500/20">
                         {dapp.category}
@@ -1531,35 +1541,35 @@ function App() {
                     description="The new version of the internet where you own your own data, identity, and digital assets instead of relying on a few big companies."
                     icon={<Globe size={24} className="text-indigo-400" />}
                     url="https://en.wikipedia.org/wiki/Web3"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url, icon: 'ðŸŒ', category: 'Education' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url, icon: '🌐', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What is Blockchain?" 
                     description="A secure, shared digital ledger that records transactions without needing a bank or middleman, making it transparent and permanent."
                     icon={<Layers size={24} className="text-emerald-400" />}
                     url="https://en.wikipedia.org/wiki/Blockchain"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: 'â›“ï¸', category: 'Education' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-blockchain', name: 'Blockchain Guide', url, icon: '⛓️', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What is a Crypto Wallet?" 
                     description="A digital tool that lets you store, send, and receive cryptocurrencies and NFTs. It acts as your ID in the decentralized world."
                     icon={<Wallet size={24} className="text-purple-400" />}
                     url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-wallet', name: 'Wallet Essentials', url, icon: 'ðŸ‘›', category: 'Education' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-wallet', name: 'Wallet Essentials', url, icon: '👛', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What are Smart Contracts?" 
                     description="Automatic programs that execute agreements when specific conditions are met, ensuring trust without needing a lawyer."
                     icon={<Cpu size={24} className="text-yellow-400" />}
                     url="https://en.wikipedia.org/wiki/Smart_contract"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-sc', name: 'Smart Contract Hub', url, icon: 'ðŸ“œ', category: 'Education' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-sc', name: 'Smart Contract Hub', url, icon: '📜', category: 'Education' } })}
                   />
                   <EduCard 
                     title="What are dApps?" 
                     description="Decentralized applications that run on a blockchain instead of a private company server, so they can't be easily shut down or censored."
                     icon={<Zap size={24} className="text-indigo-400" />}
                     url="https://en.wikipedia.org/wiki/Decentralized_application"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-dapps', name: 'dApp Essentials', url, icon: 'ðŸ—ï¸', category: 'Education' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-dapps', name: 'dApp Essentials', url, icon: '🎮', category: 'Education' } })}
                   />
                 </div>
               </div>
@@ -1577,35 +1587,35 @@ function App() {
                     description="A decentralized exchange (DEX) where you can swap tokens directly from your wallet without needing a central middleman."
                     tag="DeFi Exchange"
                     url="https://app.uniswap.org"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-uniswap', name: 'Uniswap', url, icon: 'ðŸ¦„', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-uniswap', name: 'Uniswap', url, icon: '🦄', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="OpenSea" 
                     description="The largest marketplace for digital collectibles (NFTs). You can buy, sell, or discover unique digital art and music here."
                     tag="NFT Marketplace"
                     url="https://opensea.io"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-opensea', name: 'OpenSea', url, icon: 'â›µ', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-opensea', name: 'OpenSea', url, icon: '🌊', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Aave" 
                     description="A protocol where you can lend or borrow crypto. It lets users earn interest on their deposits or take out loans instantly."
                     tag="Lending & Borrowing"
                     url="https://app.aave.com"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-aave', name: 'Aave', url, icon: 'ðŸ‘»', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-aave', name: 'Aave', url, icon: '👻', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Lens Protocol" 
                     description="A decentralized social network graph. It allows users to own their social profile and content instead of the platform owning it."
                     tag="Decentralized Social"
                     url="https://www.lens.xyz/"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-lens', name: 'Lens', url, icon: 'ðŸŒ¿', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-lens', name: 'Lens', url, icon: '🌿', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Friend.tech" 
                     description="A social app that lets you buy and sell 'keys' of social profiles, giving you access to private chats and community perks."
                     tag="Social Finance"
                     url="https://www.friend.tech/"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-ft', name: 'Friend.tech', url, icon: 'ðŸ¤', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' } })}
                   />
                 </div>
               </div>
@@ -1619,7 +1629,7 @@ function App() {
                     </p>
                     <div className="flex gap-6">
                        <button 
-                         onClick={() => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: 'ðŸŒ', category: 'Education' } })}
+                         onClick={() => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '🌐', category: 'Education' } })}
                          className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95"
                        >
                           START JOURNEY
@@ -1775,12 +1785,12 @@ function App() {
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 mb-5 flex items-center gap-2"><Trophy size={12} /> Achievements</h3>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { label: 'Web3 Pioneer', icon: 'ðŸš€', color: 'from-indigo-500/30 to-purple-500/20', border: 'border-indigo-500/30' },
-                    { label: 'DeFi Explorer', icon: 'ðŸŒŠ', color: 'from-emerald-500/20 to-teal-500/10', border: 'border-emerald-500/25' },
-                    { label: 'Hela Holder', icon: 'âš¡', color: 'from-amber-500/20 to-orange-500/10', border: 'border-amber-500/25' },
-                    { label: 'NFT Collector', icon: 'ðŸŽ¨', color: 'from-pink-500/20 to-rose-500/10', border: 'border-pink-500/25' },
-                    { label: 'Block Master', icon: 'ðŸ”·', color: 'from-blue-500/20 to-cyan-500/10', border: 'border-blue-500/25' },
-                    { label: 'Game Winner', icon: 'ðŸŽ®', color: 'from-violet-500/20 to-fuchsia-500/10', border: 'border-violet-500/25' },
+                    { label: 'Web3 Pioneer', icon: '🚀', color: 'from-indigo-500/30 to-purple-500/20', border: 'border-indigo-500/30' },
+                    { label: 'DeFi Explorer', icon: '🌊', color: 'from-emerald-500/20 to-teal-500/10', border: 'border-emerald-500/25' },
+                    { label: 'Hela Holder', icon: '⚡', color: 'from-amber-500/20 to-orange-500/10', border: 'border-amber-500/25' },
+                    { label: 'NFT Collector', icon: '🎨', color: 'from-pink-500/20 to-rose-500/10', border: 'border-pink-500/25' },
+                    { label: 'Block Master', icon: '🧱', color: 'from-blue-500/20 to-cyan-500/10', border: 'border-blue-500/25' },
+                    { label: 'Game Winner', icon: '🎮', color: 'from-violet-500/20 to-fuchsia-500/10', border: 'border-violet-500/25' },
                   ].map((badge, i) => (
                     <div key={i} className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${badge.color} border ${badge.border} hover:scale-105 transition-transform cursor-default`}>
                       <span className="text-sm">{badge.icon}</span>
@@ -2212,7 +2222,8 @@ function App() {
                        <button onClick={async () => {
                            setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']);
                            setShowQuestModal(false);
-                           updateActiveTab({ type: 'education', dapp: DAPPS.find(d => d.category === 'Education') || DAPPS[21] });
+                           // Navigate to Education Hub instead of a specific iframe to ensure visibility
+                           updateActiveTab({ type: 'education', dapp: null });
                            await claimReward('wtf_quest_action', 5); // Start reward
                         }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
                     )}
