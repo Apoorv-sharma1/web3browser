@@ -110,7 +110,8 @@ function App() {
       const VIP_SITES = [
         'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
         'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com',
-        'geeksforgeeks.org', 'wikipedia.org', 'en.wikipedia.org', 'investopedia.com', 'medium.com'
+        'geeksforgeeks.org', 'wikipedia.org', 'en.wikipedia.org', 'investopedia.com', 'medium.com',
+        'hela.network', 'magiceden.io'
       ];
       const domain = activeDApp.url.toLowerCase();
       
@@ -658,9 +659,9 @@ function App() {
               {/* Recommended Searches */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { title: 'Hela Network', url: 'https://hela.network', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
+                  { title: 'Hela Network', url: 'https://docs.hela.network', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
                   { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
-                  { title: 'NFT Trends', url: 'https://rarible.com/explore', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
+                  { title: 'NFT Trends', url: 'https://magiceden.io', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
                   <div key={i} onClick={() => setActiveDApp({ id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
                     <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all">{item.icon}</div>
