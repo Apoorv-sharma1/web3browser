@@ -30,7 +30,9 @@ import {
   Lock,
   AlertTriangle,
   CheckCircle,
-  X
+  X,
+  ShoppingCart,
+  Users
 } from 'lucide-react';
 
 // Mock dApps Data
@@ -85,6 +87,12 @@ function App() {
   const [searchError, setSearchError] = useState(null);
   const [helaBalance, setHelaBalance] = useState('0.00');
   const [isWalletGateOpen, setIsWalletGateOpen] = useState(true);
+  
+  // UI States for Rewards
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isQuesting, setIsQuesting] = useState(false);
+  const [isReferring, setIsReferring] = useState(false);
+  const [isCashbacking, setIsCashbacking] = useState(false);
 
   // Profile & Accounts State
   const [userProfile, setUserProfile] = useState(() => {
@@ -283,8 +291,9 @@ function App() {
           .then(res => res.json())
           .then(data => {
             const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
+            const totalHela = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
             setPoints(totalPoints);
-            setHelaBalance((totalPoints / 1000).toFixed(2));
+            setHelaBalance(totalHela.toFixed(2));
           });
 
       } catch (err) {
@@ -295,29 +304,57 @@ function App() {
     }
   };
 
-  const redeemPoints = () => {
+  const redeemPoints = async () => {
+    if (!walletAddress) return alert('Connect wallet first');
     if (points < 1000) return alert('Insufficient points: Min 1,000 pts required for 1 Hela.');
     
-    if(confirm(`Convert 1,000 Points into 1 Hela?`)) {
-       setPoints(prev => prev - 1000);
-       setHelaBalance(prev => (parseFloat(prev) + 1).toFixed(2));
-       alert('Redemption Successful: +1 Hela synchronized to account matrix.');
+    setIsRedeeming(true);
+    try {
+      const res = await fetch(`${API_URL}/rewards/redeem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet_address: walletAddress })
+      });
+      
+      if (res.ok) {
+        setPoints(prev => prev - 1000);
+        setHelaBalance(prev => (parseFloat(prev) + 1).toFixed(2));
+        // Add a slight delay for aesthetic loading impression
+        setTimeout(() => {
+          setIsRedeeming(false);
+          alert('Redemption Successful: +1 Hela synchronized to account matrix.');
+        }, 800);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Redemption failed');
+        setIsRedeeming(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsRedeeming(false);
+      alert('Network error during redemption.');
     }
   };
 
-  const claimReward = async () => {
+  const claimReward = async (activityType = 'dapp_interaction') => {
     // ...existing claimReward logic...
     if (!walletAddress) return alert('Connect wallet first');
     
-    fetch(`${API_URL}/rewards/claim`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet_address: walletAddress })
-    })
-    .then(res => res.json())
-    .then(data => {
-      setPoints(prev => prev + (data.points || 0));
-    });
+    try {
+      const res = await fetch(`${API_URL}/rewards/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet_address: walletAddress, activity_type: activityType })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPoints(prev => prev + (data.points || 0));
+        return true;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    return false;
   };
 
   const truncateAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
@@ -803,57 +840,137 @@ function App() {
                     <p className="text-base text-white/40 leading-relaxed font-medium mb-10 h-10 overflow-hidden line-clamp-2">{dapp.description}</p>
                     <div className="flex items-center text-sm font-black text-white/20 group-hover:text-white transition-all tracking-[0.2em] uppercase">
                       Execute Link <ChevronRight size={18} className="ml-2 group-hover:translate-x-2 transition-transform text-indigo-500" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : activeTab === 'rewards' ? (
-             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+                            ) : activeTab === 'rewards' ? (
+             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20 relative">
+                <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+                
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
                   <div className="text-center lg:text-left">
-                    <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase leading-none italic opacity-90">REWARDS ENGINE</h1>
+                    <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase leading-none italic opacity-90 drop-shadow-xl">REWARDS ENGINE</h1>
                     <p className="text-white/40 text-xl font-medium tracking-tight">Ecosystem contributions and $HELA yield conversion.</p>
                   </div>
                   <button 
                     onClick={redeemPoints}
-                    className="group relative bg-[#00d1ff] hover:bg-[#00b8e6] px-10 py-5 rounded-3xl font-black text-lg transition-all shadow-2xl shadow-[#00d1ff]/20 active:scale-95 flex items-center gap-3 text-black"
+                    disabled={isRedeeming || points < 1000}
+                    className={`group relative px-10 py-5 rounded-3xl font-black text-lg transition-all shadow-2xl flex items-center gap-3 overflow-hidden ${
+                      points >= 1000 
+                        ? 'bg-[#00d1ff] hover:bg-[#00b8e6] text-black shadow-[#00d1ff]/20 active:scale-95' 
+                        : 'bg-white/10 text-white/30 cursor-not-allowed border border-white/5'
+                    }`}
                   >
-                    <Zap size={24} className="group-hover:animate-bounce" />
-                    REDEEM HELA COINS
+                    {isRedeeming ? (
+                      <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                    ) : (
+                      <Zap size={24} className={points >= 1000 ? "group-hover:animate-bounce" : ""} />
+                    )}
+                    <span className="relative z-10">{isRedeeming ? 'PROCESSING...' : 'REDEEM HELA COINS'}</span>
+                    {points >= 1000 && <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>}
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
                    <div className="lg:col-span-1 space-y-6">
                       <RewardCard icon={<Zap size={20} className="text-yellow-400"/>} label="Points Balance" value={points.toLocaleString()} subValue="1000 pts = 1 Hela" />
                       <RewardCard icon={<CreditCard size={20} className="text-emerald-400"/>} label="Hela Balance" value={`${helaBalance} HELA`} subValue="Verified Chain" />
                    </div>
 
                    <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
-                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Browsing Rewards</h3>
-                         <p className="text-sm text-white/40 font-bold">Earn points automatically as you search and navigate the decentralized web.</p>
-                         <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center">Active: +1.5x Multiplier Enabled</div>
+                      {/* Browsing Rewards */}
+                      <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                           <Globe size={100} />
+                         </div>
+                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400 relative z-10">Browsing Rewards</h3>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Earn points automatically as you search and navigate the decentralized web.</p>
+                         <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative z-10">Active: +1.5x Multiplier Enabled</div>
                       </div>
-                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
-                         <h3 className="text-xl font-black uppercase tracking-tighter text-purple-400">Santa Quests</h3>
-                         <p className="text-sm text-white/40 font-bold">Complete high-value side quests to boost your neural rank and earn massive point drops.</p>
-                         <button className="w-full py-3 glass rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10">Launch Quests</button>
+                      
+                      {/* Santa Quests */}
+                      <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                           <Trophy size={100} />
+                         </div>
+                         <div className="flex justify-between items-start relative z-10">
+                           <h3 className="text-xl font-black uppercase tracking-tighter text-purple-400">Santa Quests</h3>
+                           <span className="text-[10px] font-black bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full border border-purple-500/30">+2,000 PTS</span>
+                         </div>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Complete high-value side quests to boost your neural rank and earn massive point drops.</p>
+                         <button 
+                           onClick={async () => {
+                             if (!walletAddress) return alert('Connect wallet first');
+                             setIsQuesting(true);
+                             setTimeout(async () => {
+                               await claimReward('santa_quest');
+                               setIsQuesting(false);
+                             }, 1500);
+                           }}
+                           disabled={isQuesting}
+                           className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-purple-500/20 hover:text-white transition-all border-white/10 hover:border-purple-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
+                         >
+                           {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <Play size={14} />}
+                           {isQuesting ? 'SYNCING...' : 'Launch Quests'}
+                         </button>
                       </div>
-                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
-                         <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-400">Partner Cashback</h3>
-                         <p className="text-sm text-white/40 font-bold">Get $HELA cashback on vouchers and transactions with our verified partner network.</p>
-                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">No Active Partners in your sector</div>
+
+                      {/* Partner Cashback */}
+                      <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                           <Store size={100} />
+                         </div>
+                         <div className="flex justify-between items-start relative z-10">
+                           <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-400">Partner Cashback</h3>
+                           <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">+500 PTS</span>
+                         </div>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Get points cashback on vouchers and simulated transactions with our verified partner network.</p>
+                         <button 
+                           onClick={async () => {
+                             if (!walletAddress) return alert('Connect wallet first');
+                             setIsCashbacking(true);
+                             setTimeout(async () => {
+                               await claimReward('partner_cashback');
+                               setIsCashbacking(false);
+                             }, 1000);
+                           }}
+                           disabled={isCashbacking}
+                           className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 hover:text-white transition-all border-white/10 hover:border-emerald-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
+                         >
+                           {isCashbacking ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <ShoppingCart size={14} />}
+                           {isCashbacking ? 'PROCESSING...' : 'Simulate Purchase'}
+                         </button>
                       </div>
-                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
-                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Node Referrals</h3>
-                         <p className="text-sm text-white/40 font-bold">Expand the matrix by referring new nodes. Earn 5,000 pts per verified identity sync.</p>
-                         <div className="flex gap-2">
-                            <input type="text" readOnly value="WEBB.NET/0x7K...2" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-indigo-400" />
-                            <button className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase border-white/10 hover:bg-white/10 transition-all">Copy</button>
+
+                      {/* Node Referrals */}
+                      <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                           <Users size={100} />
+                         </div>
+                         <div className="flex justify-between items-start relative z-10">
+                           <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Node Referrals</h3>
+                           <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30">+5,000 PTS</span>
+                         </div>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Expand the matrix by referring new nodes. Earn 5,000 pts per verified identity sync.</p>
+                         <div className="flex gap-2 relative z-10 mt-auto">
+                            <input type="text" readOnly value={`WEBB.NET/${walletAddress ? walletAddress.substring(0,6) : 'PROXY'}`} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-black tracking-widest text-indigo-400 focus:outline-none" />
+                            <button 
+                              onClick={async () => {
+                                if (!walletAddress) return alert('Connect wallet first');
+                                setIsReferring(true);
+                                setTimeout(async () => {
+                                  await claimReward('node_referral');
+                                  setIsReferring(false);
+                                  alert('Referral Sync Simulated: Points Added!');
+                                }, 2000);
+                              }}
+                              disabled={isReferring}
+                              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black uppercase border-white/10 transition-all shadow-lg active:scale-95 flex items-center justify-center min-w-[100px]"
+                            >
+                              {isReferring ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Copy'}
+                            </button>
                          </div>
                       </div>
+                   </div>
+                </div>
+             </section>                      </div>
                    </div>
                 </div>
              </section>
