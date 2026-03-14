@@ -128,18 +128,26 @@ function App() {
   // Sync Rewards when wallet changes
   useEffect(() => {
     if (walletAddress) {
+       // Fetch Total Balance
+       fetch(`${API_URL}/rewards/balance/${walletAddress}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.total_points !== undefined) {
+              setPoints(data.total_points);
+              setHelaBalance(data.total_tokens.toFixed(2));
+            }
+          })
+          .catch(err => console.error('Fetch balance failed', err));
+
+       // Fetch 24h History for Activity Stream
        fetch(`${API_URL}/rewards/${walletAddress}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) {
-              const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
-              const totalHelaReward = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
-              setPoints(totalPoints);
-              setHelaBalance(totalHelaReward.toFixed(2));
               setRewardHistory(data);
             }
           })
-          .catch(err => console.error('Fetch rewards failed', err));
+          .catch(err => console.error('Fetch history failed', err));
     }
   }, [walletAddress]);
 
@@ -652,6 +660,24 @@ function App() {
     }
   };
 
+  const refreshBalance = async () => {
+    if (!walletAddress) return;
+    try {
+      const res = await fetch(`${API_URL}/rewards/balance/${walletAddress}`);
+      const data = await res.json();
+      if (data.total_points !== undefined) {
+        setPoints(data.total_points);
+        setHelaBalance(data.total_tokens.toFixed(2));
+      }
+      
+      const resHist = await fetch(`${API_URL}/rewards/${walletAddress}`);
+      const dataHist = await resHist.json();
+      if (Array.isArray(dataHist)) setRewardHistory(dataHist);
+    } catch (e) {
+      console.error('Refresh balance failed', e);
+    }
+  };
+
   const claimReward = async (activityType = 'dapp_interaction', score = 0) => {
     // ...existing claimReward logic...
     if (!walletAddress) return alert('Connect wallet first');
@@ -665,7 +691,9 @@ function App() {
       
       if (res.ok) {
         const data = await res.json();
-        setPoints(prev => prev + (data.points || 0));
+        // Force immediate aggregate sync
+        await refreshBalance();
+        
         // Track completion for one-time visual removal
         if (activityType === 'wtf_quest' || activityType === 'wtf_quest_action') {
            setCompletedQuests(prev => [...prev, activityType === 'wtf_quest_action' ? (activeQuests[0] || 'scholar') : 'daily']);
@@ -674,10 +702,7 @@ function App() {
       } else {
         const data = await res.json();
         console.warn('Reward claim failed:', data.error);
-        if (activityType === 'wtf_quest' && !data.error) {
-           // Provide a local fallback alert if daily limit blocked it but didn't return an explicit message
-           console.warn('Daily quest limit reached.');
-        } else if (activityType === 'wtf_quest') {
+        if (activityType === 'wtf_quest') {
            alert(data.error || 'Daily quest limit reached.');
         }
       }
@@ -2184,7 +2209,12 @@ function App() {
                     {activeQuests.includes('scholar') ? (
                        <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
                     ) : (
-                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); updateActiveTab({ type: 'education', dapp: DAPPS.find(d => d.category === 'Education') || DAPPS[21] }); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
+                       <button onClick={async () => {
+                           setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']);
+                           setShowQuestModal(false);
+                           updateActiveTab({ type: 'education', dapp: DAPPS.find(d => d.category === 'Education') || DAPPS[21] });
+                           await claimReward('wtf_quest_action', 5); // Start reward
+                        }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
                     )}
                  </div>
                )}
@@ -2199,7 +2229,14 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: 'dapps' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
+                    <button onClick={async () => { 
+                        const success = await claimReward('wtf_quest_action', 5); 
+                        if (success) {
+                          alert('Explorer Quest: +5 points!'); 
+                          setShowQuestModal(false); 
+                          updateActiveTab({ type: 'dapps' }); 
+                        }
+                     }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
                  </div>
                )}
  
@@ -2213,7 +2250,14 @@ function App() {
                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
                        </div>
                     </div>
-                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); updateActiveTab({ type: 'wtf-zone' }); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
+                    <button onClick={async () => { 
+                        const success = await claimReward('wtf_quest_action', 5); 
+                        if (success) {
+                           alert('Gamer Quest: +5 points!'); 
+                           setShowQuestModal(false); 
+                           updateActiveTab({ type: 'wtf-zone' }); 
+                        }
+                     }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
                  </div>
                )}
              </div>
@@ -2246,9 +2290,30 @@ function App() {
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-8">Broadcast your identity to expand the matrix and earn 50 PTS.</p>
             
             <div className="space-y-3 mb-6">
-               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12A12 12 0 0 0 12.029 4.456zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
-               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
-               <button onClick={() => { window.open('https://t.me/share/url?url=https://web3browser-sooty.vercel.app/&text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
+               <button onClick={async () => { 
+                  window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); 
+                  const success = await claimReward('node_referral'); 
+                  if (success) {
+                    alert('Broadcast successful: +50 Points!');
+                    setShowShareModal(false); 
+                  }
+               }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12A12 12 0 0 0 12.029 4.456zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
+               <button onClick={async () => { 
+                  window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); 
+                  const success = await claimReward('node_referral'); 
+                  if (success) {
+                    alert('Expansion broadcasted: +50 Points!');
+                    setShowShareModal(false); 
+                  }
+               }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
+               <button onClick={async () => { 
+                  window.open('https://t.me/share/url?url=https://web3browser-sooty.vercel.app/&text=Check%20out%20this%20Web3%20Browser!', '_blank'); 
+                  const success = await claimReward('node_referral'); 
+                  if (success) {
+                    alert('Matrix expanded: +50 Points!');
+                    setShowShareModal(false); 
+                  }
+               }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
             </div>
             
             <button onClick={() => setShowShareModal(false)} className="text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors tracking-widest">Close Matrix</button>
@@ -2295,17 +2360,19 @@ function App() {
                      <div className="flex items-center justify-between mt-auto">
                         <span className="text-[10px] font-black uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-lg text-white/70">{v.cost.toLocaleString()} PTS</span>
                         <button 
-                          onClick={() => {
+                          onClick={async () => {
                             if (points < v.cost) return alert('Insufficient points for this voucher.');
-                            setPoints(p => p - v.cost);
-                            const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-                            const keyId = 'KEY-' + Math.floor(Math.random() * 100000);
-                            setRedeemedVouchers(prev => [...prev, { brand: v.brand, value: v.value, code, keyId }]);
-                            alert(`Success! Redeemed ${v.brand} voucher.`);
+                            const success = await claimReward(`${v.brand.toLowerCase()}_redemption`, -v.cost);
+                            if (success) {
+                               const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+                               const keyId = 'KEY-' + Math.floor(Math.random() * 100000);
+                               setRedeemedVouchers(prev => [...prev, { brand: v.brand, value: v.value, code, keyId }]);
+                               alert(`Voucher for ${v.brand} synchronized to your neural identity.`);
+                            }
                           }}
-                          className="px-4 py-2 glass rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all"
+                          className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${points >= v.cost ? 'bg-emerald-500 text-black hover:bg-emerald-400 active:scale-95' : 'bg-white/5 text-white/20 cursor-not-allowed'}`}
                         >
-                          Redeem
+                          {points >= v.cost ? 'Redeem now' : 'locked'}
                         </button>
                      </div>
                   </div>
