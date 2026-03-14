@@ -840,7 +840,12 @@ function App() {
                     <p className="text-base text-white/40 leading-relaxed font-medium mb-10 h-10 overflow-hidden line-clamp-2">{dapp.description}</p>
                     <div className="flex items-center text-sm font-black text-white/20 group-hover:text-white transition-all tracking-[0.2em] uppercase">
                       Execute Link <ChevronRight size={18} className="ml-2 group-hover:translate-x-2 transition-transform text-indigo-500" />
-                            ) : activeTab === 'rewards' ? (
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : activeTab === 'rewards' ? (
              <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20 relative">
                 <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
                 
@@ -968,9 +973,6 @@ function App() {
                             </button>
                          </div>
                       </div>
-                   </div>
-                </div>
-             </section>                      </div>
                    </div>
                 </div>
              </section>
