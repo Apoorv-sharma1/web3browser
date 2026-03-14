@@ -950,7 +950,7 @@ function App() {
                       <h2 className="text-3xl font-black tracking-tighter uppercase mb-2">Essential Protocols</h2>
                       <p className="text-white/30 font-bold italic">Handpicked elite decentralized applications.</p>
                    </div>
-                   <button onClick={() => updateActiveTab({ type: '' })} className="flex items-center gap-3 text-indigo-400 font-black tracking-widest uppercase text-xs hover:text-white transition-colors group">
+                   <button onClick={() => updateActiveTab({ type: 'dapps' })} className="flex items-center gap-3 text-indigo-400 font-black tracking-widest uppercase text-xs hover:text-white transition-colors group">
                      View Full Grid <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                    </button>
                 </div>
@@ -1087,7 +1087,7 @@ function App() {
                          <p className="text-sm text-white/40 font-bold relative z-10">Passive point generation enabled. Browse the ecosystem to automatically stack points over time.</p>
                          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative z-10">Active: +1.5x Multiplier Enabled</div>
                          <button 
-                           onClick={() => updateActiveTab({ type: '' })}
+                           onClick={() => updateActiveTab({ type: 'dapps' })}
                            className="w-full py-3 glass rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 hover:text-white transition-all border-white/10 mt-2 relative z-10 flex items-center justify-center gap-2"
                          >
                            Explore DApps
