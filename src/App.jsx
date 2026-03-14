@@ -93,6 +93,8 @@ function App() {
   const [isQuesting, setIsQuesting] = useState(false);
   const [isReferring, setIsReferring] = useState(false);
   const [isCashbacking, setIsCashbacking] = useState(false);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [redeemAmount, setRedeemAmount] = useState(1000);
 
   // Profile & Accounts State
   const [userProfile, setUserProfile] = useState(() => {
@@ -304,25 +306,26 @@ function App() {
     }
   };
 
-  const redeemPoints = async () => {
+  const executeRedeem = async () => {
     if (!walletAddress) return alert('Connect wallet first');
-    if (points < 1000) return alert('Insufficient points: Min 1,000 pts required for 1 Hela.');
+    if (redeemAmount < 1000 || points < redeemAmount || redeemAmount % 1000 !== 0) return alert('Invalid redemption amount.');
     
     setIsRedeeming(true);
+    setShowRedeemModal(false);
     try {
       const res = await fetch(`${API_URL}/rewards/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet_address: walletAddress })
+        body: JSON.stringify({ wallet_address: walletAddress, points: redeemAmount })
       });
       
       if (res.ok) {
-        setPoints(prev => prev - 1000);
-        setHelaBalance(prev => (parseFloat(prev) + 1).toFixed(2));
+        setPoints(prev => prev - redeemAmount);
+        setHelaBalance(prev => (parseFloat(prev) + (redeemAmount / 1000)).toFixed(2));
         // Add a slight delay for aesthetic loading impression
         setTimeout(() => {
           setIsRedeeming(false);
-          alert('Redemption Successful: +1 Hela synchronized to account matrix.');
+          alert(`Redemption Successful: +${(redeemAmount/1000).toFixed(2)} Hela synchronized to account matrix.`);
         }, 800);
       } else {
         const data = await res.json();
@@ -855,7 +858,12 @@ function App() {
                     <p className="text-white/40 text-xl font-medium tracking-tight">Ecosystem contributions and $HELA yield conversion.</p>
                   </div>
                   <button 
-                    onClick={redeemPoints}
+                    onClick={() => {
+                      if (points >= 1000) {
+                        setRedeemAmount(1000); // Default to minimum
+                        setShowRedeemModal(true);
+                      }
+                    }}
                     disabled={isRedeeming || points < 1000}
                     className={`group relative px-10 py-5 rounded-3xl font-black text-lg transition-all shadow-2xl flex items-center gap-3 overflow-hidden ${
                       points >= 1000 
@@ -1446,6 +1454,62 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Redeem Modal */}
+      {showRedeemModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+          <div className="glass-card max-w-md w-full p-8 rounded-[3rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent shadow-[0_0_100px_rgba(0,209,255,0.1)]">
+            <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-2">REDEEM <span className="text-[#00d1ff]">HELA</span></h2>
+            <p className="text-white/40 text-sm font-bold mb-8">Select the amount of points you wish to convert. 1000 PTS = 1 HELA.</p>
+            
+            <div className="glass rounded-[2rem] p-6 border-white/5 mb-8 text-center space-y-4 relative">
+               <div className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Conversion Preview</div>
+               <div className="flex items-center justify-center gap-6">
+                 <div>
+                    <div className="text-2xl font-black text-white px-4 py-2 bg-black/40 rounded-xl tabular-nums drop-shadow-md">{redeemAmount.toLocaleString()}</div>
+                    <div className="text-[10px] font-bold text-white/30 uppercase mt-2">PTS Deducted</div>
+                 </div>
+                 <ChevronRight size={24} className="text-white/20" />
+                 <div>
+                    <div className="text-2xl font-black text-[#00d1ff] px-4 py-2 bg-[#00d1ff]/10 rounded-xl tabular-nums drop-shadow-md">+{(redeemAmount/1000).toFixed(2)}</div>
+                    <div className="text-[10px] font-bold text-[#00d1ff]/50 uppercase mt-2">HELA Yield</div>
+                 </div>
+               </div>
+            </div>
+
+            <div className="space-y-6 mb-10">
+               <div className="flex justify-between text-xs font-black uppercase text-white/40">
+                 <span>1,000</span>
+                 <span>Max: {(Math.floor(points/1000)*1000).toLocaleString()}</span>
+               </div>
+               <input 
+                 type="range" 
+                 min="1000" 
+                 max={Math.floor(points/1000)*1000 || 1000} 
+                 step="1000" 
+                 value={redeemAmount} 
+                 onChange={(e) => setRedeemAmount(Number(e.target.value))}
+                 className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#00d1ff]"
+               />
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowRedeemModal(false)}
+                className="flex-1 py-4 glass rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white/50 border-white/5 active:scale-95"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={executeRedeem}
+                className="flex-1 py-4 bg-[#00d1ff] hover:bg-[#00b8e6] text-black rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(0,209,255,0.3)] hover:shadow-[0_0_30px_rgba(0,209,255,0.5)] active:scale-95"
+              >
+                Confirm Sync
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Game Overlays */}
       {activeGame === 'snake' && (
