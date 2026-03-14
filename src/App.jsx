@@ -884,24 +884,32 @@ function App() {
                     description="Our browser automatically neutralizes ads, trackers, and malicious scripts, ensuring your decentralized journey remains private and invisible to data harvesters."
                     icon={<ShieldCheck size={24} className="text-red-400" />}
                     tag="Active Defense"
+                    url="https://en.wikipedia.org/wiki/Internet_privacy"
+                    onLearnMore={(url) => setActiveDApp({ id: 'sec-privacy', name: 'Privacy Protocol', url, icon: '🛡️', category: 'Security' })}
                   />
                   <EduCard 
                     title="Wallet Security" 
                     description="Safely manage connections with MetaMask or WalletConnect. View balances and networks while maintaining 100% sovereignty over your private keys."
                     icon={<Lock size={24} className="text-blue-400" />}
                     tag="Key Protection"
+                    url="https://en.wikipedia.org/wiki/Cryptocurrency_wallet#Security"
+                    onLearnMore={(url) => setActiveDApp({ id: 'sec-wallet', name: 'Wallet Security', url, icon: '🔐', category: 'Security' })}
                   />
                   <EduCard 
                     title="dApp Safety Check" 
                     description="Every protocol is scanned for known vulnerabilities. Our system provides instant status indicators: Verified, Unknown, or Warning."
                     icon={<Activity size={24} className="text-emerald-400" />}
                     tag="Verification"
+                    url="https://en.wikipedia.org/wiki/Decentralized_application"
+                    onLearnMore={(url) => setActiveDApp({ id: 'sec-dapps', name: 'dApp Verification', url, icon: '✅', category: 'Security' })}
                   />
                   <EduCard 
                     title="Smart Contract Alerts" 
                     description="Receive instant alerts when a dApp requests wallet or token permissions. Always review the scope of access before approving any transaction."
                     icon={<AlertTriangle size={24} className="text-yellow-400" />}
                     tag="Guardianship"
+                    url="https://en.wikipedia.org/wiki/Smart_contract"
+                    onLearnMore={(url) => setActiveDApp({ id: 'sec-sc', name: 'Contract Alerts', url, icon: '📜', category: 'Security' })}
                   />
                   <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5 col-span-1 md:col-span-2">
                     <div className="flex items-center gap-4">
