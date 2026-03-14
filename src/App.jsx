@@ -43,9 +43,10 @@ import {
   LayoutGrid,
   Rocket,
   Gamepad2,
-  Sparkles, // Added Sparkles
-  Droplets, // Added Droplets
-  Sun // Added Sun
+  Sparkles,
+  Droplets,
+  Sun,
+  ShieldAlert
 } from 'lucide-react';
 import { SnakeGame, TetrisGame, SpaceBlasterGame, TicTacToe } from './components/Games';
 
@@ -1064,13 +1065,13 @@ function App() {
 
                   <div className="flex-1 glass rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 relative bg-[#12141a]">
                     {iframeStatus === 'loading' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl z-20">
-                        <div className="w-20 h-20 relative">
-                            <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl z-20">
+                        <div className="w-16 h-16 relative">
+                            <div className="absolute inset-0 border-4 border-indigo-500/10 rounded-full"></div>
                             <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                        <p className="mt-8 text-xl font-bold tracking-widest uppercase text-white/80">Securing environment</p>
-                        <p className="mt-2 text-sm text-white/30 font-medium italic">Resolving cross-origin restrictions...</p>
+                        <p className="mt-8 text-lg font-black tracking-[0.2em] uppercase text-white/50">Securing environment</p>
+                        <p className="mt-2 text-[10px] text-indigo-400 font-bold uppercase tracking-widest animate-pulse">Resolving cross-origin restrictions...</p>
                       </div>
                     )}
 
@@ -1092,7 +1093,7 @@ function App() {
                       </div>
                     )}
 
-                    {tab.dapp.url.includes('helalabs.com') || tab.dapp.url.includes('hela.network') ? (
+                    {tab.dapp?.url && (tab.dapp.url.includes('helalabs.com') || tab.dapp.url.includes('hela.network')) ? (
                        <iframe 
                          key={iframeKey}
                          src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
@@ -1101,7 +1102,7 @@ function App() {
                          title={`${tab.dapp.name} (Proxied)`} 
                          onLoad={() => setIframeStatus('loaded')}
                        />
-                     ) : (
+                     ) : tab.dapp?.url ? (
                        <iframe 
                          key={iframeKey}
                          src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`}
@@ -1110,7 +1111,7 @@ function App() {
                          title={tab.dapp.name} 
                          onLoad={() => setIframeStatus('loaded')}
                        />
-                     )}
+                     ) : null}
                   </div>
                 </div>
               ) : tab.type === 'search' ? (
