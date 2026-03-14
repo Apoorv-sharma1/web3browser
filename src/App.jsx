@@ -36,7 +36,9 @@ import {
   Plus,
   ChevronLeft,
   RefreshCw,
-  Star
+  Star,
+  ArrowUpRight,
+  Copy
 } from 'lucide-react';
 
 // Mock dApps Data
@@ -1771,225 +1773,191 @@ function App() {
       </main>
 
       {/* Wallet Modal */}
-                  {showWalletModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
-          <div className="glass-card max-w-lg w-full p-8 rounded-[3rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent shadow-[0_0_100px_rgba(99,102,241,0.1)]">
-            <div className="flex justify-between items-center mb-8">
-               <div className="flex flex-col">
-                  <h2 className="text-2xl font-black uppercase tracking-tighter italic leading-none">BUILT-IN <span className="text-indigo-400">WALLET</span></h2>
-                  <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] mt-1.5">HELA OFFICIAL RUNTIME v1.2</p>
-               </div>
-               <button onClick={() => setShowWalletModal(false)} className="w-10 h-10 flex items-center justify-center glass rounded-full hover:bg-white/10 transition-all text-white/50"><X size={18} /></button>
+                        {showWalletModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+          <div className="w-full max-w-md bg-[#0d1117] border border-white/10 rounded-3xl p-6 shadow-2xl">
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tight text-white">Built-in <span className="text-indigo-400">Wallet</span></h2>
+                <p className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">Hela Official Runtime Â· Chain 666888</p>
+              </div>
+              <button onClick={() => setShowWalletModal(false)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 transition-all">
+                <X size={16} />
+              </button>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2 p-1.5 glass rounded-[2rem] mb-10 border-white/5">
-               {['assets', 'send', 'receive'].map(tab => (
-                 <button 
+            {/* Tabs */}
+            <div className="flex gap-1 bg-white/5 p-1 rounded-2xl mb-6">
+              {['assets', 'send', 'receive'].map(tab => (
+                <button
                   key={tab}
                   onClick={() => setActiveWalletTab(tab)}
-                  className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative overflow-hidden ${activeWalletTab === tab ? 'text-white' : 'text-white/30 hover:bg-white/5'}`}
-                 >
-                   {activeWalletTab === tab && (
-                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 animate-in fade-in duration-500" />
-                   )}
-                   <span className="relative z-10">{tab}</span>
-                 </button>
-               ))}
+                  className={`flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${activeWalletTab === tab ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-white/40 hover:text-white/70'}`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
-            <div className="min-h-[300px] flex flex-col">
-                {/* ASSETS TAB */}
-                {activeWalletTab === 'assets' && (
-                  <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-600">
-                    {!isCorrectNetwork && (
-                      <div className="w-full mb-8 p-5 bg-red-500/5 border border-red-500/20 rounded-3xl flex items-center gap-4 text-red-400">
-                        <AlertTriangle size={20} className="shrink-0" />
-                        <div className="flex-1">
-                          <div className="text-[10px] font-black uppercase tracking-widest leading-none mb-1.5">Network Mismatch</div>
-                          <div className="text-[10px] font-medium opacity-70">Connect to Hela Mainnet for data sync.</div>
-                        </div>
-                        <button 
-                          onClick={checkNetwork}
-                          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-red-500/20"
-                        >
-                          Switch
-                        </button>
-                      </div>
-                    )}
-                    
-                    <div className="relative mb-10">
-                      <div className="w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[3rem] flex items-center justify-center shadow-2xl relative animate-float">
-                         <CreditCard size={56} className="text-white" />
-                         <div className={`absolute -top-1 -right-1 w-8 h-8 rounded-full border-[6px] border-[#07090c] shadow-glow ${isCorrectNetwork ? 'bg-emerald-400' : 'bg-red-500'}`} />
-                      </div>
-                      <div className="absolute -inset-4 bg-indigo-500/10 blur-3xl -z-10 rounded-full animate-pulse"></div>
+            {/* ASSETS TAB */}
+            {activeWalletTab === 'assets' && (
+              <div className="flex flex-col items-center py-4">
+                {!isCorrectNetwork && (
+                  <div className="w-full mb-5 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400">
+                    <AlertTriangle size={18} className="shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-wider">Wrong Network</p>
+                      <p className="text-[10px] text-red-400/60">Switch to Hela Testnet (666888)</p>
                     </div>
-
-                    <div className="text-center w-full">
-                       <div className="flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-4">
-                          Available Balance
-                          <button 
-                            onClick={async () => {
-                              const isCorrect = await checkNetworkStatus();
-                              setIsCorrectNetwork(isCorrect);
-                              if (isCorrect) fetchHLUSDBalance(walletAddress);
-                              setLastRefresh(Date.now());
-                            }}
-                            className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg text-indigo-400 hover:text-white transition-all active:rotate-180 duration-500"
-                            title="Refresh Sync"
-                          >
-                            <RefreshCw size={12} />
-                          </button>
-                       </div>
-                       <div className="text-6xl font-black text-white tracking-tighter mb-3 tabular-nums drop-shadow-2xl">
-                          {isCorrectNetwork ? parseFloat(hlusdBalance).toFixed(4) : '0.000'}
-                       </div>
-                       <div className="inline-flex items-center gap-2 text-indigo-400 font-black tracking-[0.2em] uppercase text-xs bg-indigo-400/5 px-4 py-1.5 rounded-full border border-indigo-400/10">
-                         <Zap size={12} fill="currentColor" /> HLUSD STABLE
-                       </div>
-                       
-                       <div className="mt-12 space-y-3">
-                          <div className="text-[9px] font-black uppercase tracking-widest text-white/15">Connected Identity</div>
-                          <div className="flex items-center justify-center gap-3">
-                             <div className="text-xs font-mono text-white/40 bg-black/40 px-5 py-2.5 rounded-2xl border border-white/5 backdrop-blur-md">
-                                {truncateAddress(walletAddress)}
-                             </div>
-                             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_100px_rgba(52,211,153,0.5)]"></div>
-                          </div>
-                          <div className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/10 pt-2">Neural Sync Active: {new Date(lastRefresh).toLocaleTimeString()}</div>
-                       </div>
-                    </div>
+                    <button onClick={checkNetwork} className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap">Switch</button>
                   </div>
                 )}
 
-                {/* SEND TAB */}
-                {activeWalletTab === 'send' && (
-                  <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-600">
-                     <div className="space-y-8 flex-1">
-                        <div className="group">
-                           <div className="flex justify-between items-center mb-4">
-                              <label className="text-[10px] font-black uppercase tracking-widest text-white/30 group-focus-within:text-indigo-400 transition-colors">Target Address</label>
-                              <div className="text-[10px] font-bold text-white/10">EVM COMPATIBLE</div>
-                           </div>
-                           <div className="relative">
-                              <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-indigo-400 transition-colors" />
-                              <input 
-                                type="text" 
-                                value={sendRecipient}
-                                onChange={(e) => setSendRecipient(e.target.value)}
-                                placeholder="Enter 0x address..." 
-                                className="w-full bg-black/40 border border-white/5 rounded-[1.5rem] pl-14 pr-5 py-5 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/20 transition-all" 
-                              />
-                           </div>
-                        </div>
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-5 shadow-xl relative">
+                  <CreditCard size={36} className="text-white" />
+                  <div className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full border-4 border-[#0d1117] ${isCorrectNetwork ? 'bg-emerald-400' : 'bg-red-500'}`} />
+                </div>
 
-                        <div className="group">
-                           <div className="flex justify-between items-center mb-4">
-                              <label className="text-[10px] font-black uppercase tracking-widest text-white/30 group-focus-within:text-emerald-400 transition-colors">Transfer Amount</label>
-                              <button onClick={() => setSendAmount(hlusdBalance)} className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors bg-indigo-400/5 px-3 py-1 rounded-lg">MAX: {parseFloat(hlusdBalance).toFixed(2)}</button>
-                           </div>
-                           <div className="relative">
-                              <input 
-                                type="number" 
-                                value={sendAmount}
-                                onChange={(e) => setSendAmount(e.target.value)}
-                                placeholder="0.00" 
-                                className="w-full bg-black/40 border border-white/5 rounded-[1.5rem] px-6 py-6 text-3xl font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/20 transition-all tabular-nums" 
-                              />
-                              <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-end">
-                                 <span className="text-sm font-black text-emerald-400 tracking-widest">HLUSD</span>
-                                 <span className="text-[8px] font-bold text-white/10 uppercase">Hela Stable</span>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
+                <div className="text-center mb-6">
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                    Balance
+                    <button
+                      onClick={async () => {
+                        const ok = await checkNetworkStatus();
+                        setIsCorrectNetwork(ok);
+                        if (ok) fetchHLUSDBalance(walletAddress);
+                        setLastRefresh(Date.now());
+                      }}
+                      className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-indigo-400 hover:text-white transition-all"
+                      title="Refresh"
+                    >
+                      <RefreshCw size={11} />
+                    </button>
+                  </p>
+                  <p className="text-5xl font-black text-white tracking-tighter tabular-nums">
+                    {isCorrectNetwork ? parseFloat(hlusdBalance).toFixed(4) : '0.0000'}
+                  </p>
+                  <p className="text-indigo-400 font-bold tracking-widest text-sm mt-1">HLUSD</p>
+                </div>
 
-                     <div className="mt-10">
-                        <button 
-                         onClick={async () => {
-                           if (!sendRecipient || !sendAmount) return alert('Enter recipient and amount.');
-                           if (!isValidAddress(sendRecipient)) return alert('Invalid address format. Connection failed.');
-                           if (parseFloat(sendAmount) > parseFloat(hlusdBalance)) return alert('Insufficient HLUSD in node.');
-                           
-                           setIsTxPending(true);
-                           try {
-                             const tx = await sendHLUSD(sendRecipient, sendAmount);
-                             alert(`Neural Broadcast Sent! Hash: ${tx.hash.slice(0,16)}...`);
-                             const receipt = await tx.wait();
-                             alert(`Sync Successful! Payment confirmed in block ${receipt.blockNumber}`);
-                             setSendAmount('');
-                             setSendRecipient('');
-                             await fetchHLUSDBalance(walletAddress);
-                           } catch (e) {
-                             console.error(e);
-                           } finally {
-                             setIsTxPending(false);
-                           }
-                         }}
-                         disabled={isTxPending || !sendRecipient || !sendAmount || !isCorrectNetwork}
-                         className={`w-full py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-2xl flex items-center justify-center gap-4 border border-white/10 ${isTxPending ? 'bg-indigo-600/50 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-600/30'}`}
-                        >
-                          {isTxPending ? (
-                            <>
-                              <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin" />
-                              <span className="text-xs">MINING TRANSACTION...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ArrowUpRight size={22} />
-                              <span className="text-xs">{isCorrectNetwork ? 'AUTHORIZE TRANSFER' : 'VERIFY NETWORK'}</span>
-                            </>
-                          )}
-                        </button>
-                        <p className="text-[9px] text-center text-white/10 font-bold uppercase tracking-widest mt-4 italic">Neural signing requires biometric approval via provider.</p>
-                     </div>
+                <div className="w-full bg-white/5 rounded-2xl p-4 text-center space-y-1">
+                  <p className="text-[10px] text-white/20 uppercase tracking-widest">Connected Address</p>
+                  <p className="font-mono text-xs text-white/50 truncate">{walletAddress}</p>
+                  <p className="text-[9px] text-white/10 uppercase">Last sync: {new Date(lastRefresh).toLocaleTimeString()}</p>
+                </div>
+              </div>
+            )}
+
+            {/* SEND TAB */}
+            {activeWalletTab === 'send' && (
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2 font-bold">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={sendRecipient}
+                    onChange={(e) => setSendRecipient(e.target.value)}
+                    placeholder="0x..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm font-mono text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Amount (HLUSD)</label>
+                    <button
+                      onClick={() => setSendAmount(hlusdBalance)}
+                      className="text-[10px] text-indigo-400 hover:text-white font-black uppercase tracking-widest transition-colors"
+                    >
+                      MAX: {parseFloat(hlusdBalance).toFixed(4)}
+                    </button>
                   </div>
-                )}
-
-                {/* RECEIVE TAB */}
-                {activeWalletTab === 'receive' && (
-                  <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-left-8 duration-600">
-                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-8 self-start">Identity Signature QR</div>
-                    
-                    <div className="relative group p-8 glass rounded-[3.5rem] border-white/5 bg-white mb-10 shadow-2xl overflow-hidden">
-                       <div className="absolute inset-0 bg-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                       <img 
-                         src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${walletAddress}&bgcolor=ffffff&color=312e81`} 
-                         alt="Identity QR" 
-                         className="w-48 h-48 object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
-                       />
-                    </div>
-
-                    <div className="text-center w-full space-y-6">
-                       <div className="space-y-3">
-                          <label className="text-[9px] font-black uppercase tracking-[0.5em] text-indigo-400">Node Public Address</label>
-                          <div className="flex items-center gap-2 bg-black/40 p-5 rounded-2xl border border-white/5 transition-all hover:border-indigo-500/30">
-                             <div className="flex-1 font-mono text-xs text-indigo-200/50 break-all leading-relaxed tracking-tighter">
-                                {walletAddress}
-                             </div>
-                             <button 
-                               onClick={() => { 
-                                 navigator.clipboard.writeText(walletAddress); 
-                                 alert('Identity address copied to visual buffer.'); 
-                               }}
-                               className="shrink-0 w-12 h-12 flex items-center justify-center glass rounded-xl text-white/40 hover:text-indigo-400 hover:bg-white/5 transition-all active:scale-90 border-white/10"
-                             >
-                                <Copy size={20} />
-                             </button>
-                          </div>
-                       </div>
-                       
-                       <div className="pt-4 flex flex-col items-center">
-                          <div className="flex items-center gap-3 text-[10px] font-black text-white/20 uppercase tracking-widest">
-                             <Shield size={14} className="text-white/10" /> Protected by Hela Security Suite
-                          </div>
-                          <p className="mt-4 text-[9px] font-bold text-white/10 uppercase tracking-widest max-w-[240px] leading-relaxed">Accepted Assets: <span className="text-indigo-400/50">HLUSD</span> only. Transfers of unknown origin may be redirected.</p>
-                       </div>
-                    </div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={sendAmount}
+                      onChange={(e) => setSendAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-2xl font-black text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all tabular-nums pr-24"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-black text-indigo-400">HLUSD</span>
                   </div>
-                )}
-            </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    if (!sendRecipient || !sendAmount) return alert('Please enter recipient address and amount.');
+                    if (!isValidAddress(sendRecipient)) return alert('Invalid Ethereum address format.');
+                    if (parseFloat(sendAmount) > parseFloat(hlusdBalance)) return alert('Insufficient HLUSD balance.');
+                    setIsTxPending(true);
+                    try {
+                      const tx = await sendHLUSD(sendRecipient, sendAmount);
+                      alert('Transaction sent! Hash: ' + tx.hash);
+                      const receipt = await tx.wait();
+                      alert('Transaction confirmed in block ' + receipt.blockNumber);
+                      setSendAmount('');
+                      setSendRecipient('');
+                      await fetchHLUSDBalance(walletAddress);
+                    } catch (e) {
+                      alert('Transaction failed: ' + (e.message || 'User rejected'));
+                      console.error(e);
+                    } finally {
+                      setIsTxPending(false);
+                    }
+                  }}
+                  disabled={isTxPending || !sendRecipient || !sendAmount || !isCorrectNetwork}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                >
+                  {isTxPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUpRight size={18} />
+                      <span>{isCorrectNetwork ? 'Send HLUSD' : 'Switch Network First'}</span>
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-[9px] text-white/15 uppercase tracking-widest">Signing requires MetaMask approval</p>
+              </div>
+            )}
+
+            {/* RECEIVE TAB */}
+            {activeWalletTab === 'receive' && (
+              <div className="flex flex-col items-center gap-5">
+                <div className="bg-white p-4 rounded-2xl shadow-xl">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddress}&margin=10`}
+                    alt="Wallet QR Code"
+                    className="w-44 h-44 object-contain"
+                    onError={(e) => { e.target.style.display='none'; }}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <p className="text-[10px] text-indigo-400 uppercase tracking-widest font-black text-center mb-3">Your Receive Address</p>
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <p className="flex-1 font-mono text-xs text-white/50 break-all leading-relaxed">{walletAddress}</p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(walletAddress);
+                        alert('Address copied!');
+                      }}
+                      className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-indigo-500/20 text-white/30 hover:text-indigo-400 transition-all active:scale-90"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-[9px] text-white/15 uppercase tracking-widest text-center font-bold leading-relaxed">Only send HLUSD on Hela Testnet to this address</p>
+              </div>
+            )}
+
           </div>
         </div>
       )}
@@ -2487,5 +2455,7 @@ function ActivityItem({ label, date, points }) {
     </div>
   );
 }
+
+
 
 
