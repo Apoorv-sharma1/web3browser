@@ -74,6 +74,8 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState(null);
+  const [helaBalance, setHelaBalance] = useState('0.00');
+  const [isWalletGateOpen, setIsWalletGateOpen] = useState(true);
 
   // Profile & Accounts State
   const [userProfile, setUserProfile] = useState(() => {
@@ -87,6 +89,7 @@ function App() {
   });
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeGame, setActiveGame] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('web3_profile', JSON.stringify(userProfile));
@@ -259,12 +262,17 @@ function App() {
           body: JSON.stringify({ wallet_address: address })
         });
 
+        // Sync with Hela Economic Engine (Mocked for 1000:1 logic)
+        setHelaBalance((totalPoints / 1000).toFixed(2));
+        setIsWalletGateOpen(false);
+
         // Fetch user rewards
         fetch(`${API_URL}/rewards/${address}`)
           .then(res => res.json())
           .then(data => {
             const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
             setPoints(totalPoints);
+            setHelaBalance((totalPoints / 1000).toFixed(2));
           });
 
       } catch (err) {
@@ -272,6 +280,16 @@ function App() {
       }
     } else {
       alert('MetaMask not detected');
+    }
+  };
+
+  const redeemPoints = () => {
+    if (points < 1000) return alert('Insufficient points: Min 1,000 pts required for 1 Hela.');
+    
+    if(confirm(`Convert 1,000 Points into 1 Hela?`)) {
+       setPoints(prev => prev - 1000);
+       setHelaBalance(prev => (parseFloat(prev) + 1).toFixed(2));
+       alert('Redemption Successful: +1 Hela synchronized to account matrix.');
     }
   };
 
@@ -293,7 +311,52 @@ function App() {
   const truncateAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
 
   return (
-    <div className="flex w-full h-screen bg-[#07090c] text-white selection:bg-indigo-500/30">
+    <div className={`flex w-full h-screen bg-[#07090c] text-white selection:bg-indigo-500/30 font-sans`}>
+      {/* Wallet Gatekeeper UI */}
+      {(!walletAddress || isWalletGateOpen) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c] overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[150px] animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[150px] animate-pulse delay-1000"></div>
+          </div>
+          
+          <div className="relative z-10 max-w-xl w-full px-8 text-center space-y-12 animate-in fade-in zoom-in duration-1000">
+            <div className="flex flex-col items-center gap-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-indigo-600/40 animate-float">
+                <ShieldCheck size={48} className="text-white" />
+              </div>
+              <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">IDENTITY <br/><span className="gradient-text">REQUIRED</span></h1>
+              <p className="text-white/40 text-lg font-medium tracking-tight">Authenticating your neural signature for decentralized access.</p>
+            </div>
+
+            <div className="glass-card p-10 rounded-[3.5rem] border-white/5 space-y-8 bg-white/5 backdrop-blur-3xl">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold uppercase tracking-tighter">Connect MetaMask</h2>
+                <p className="text-sm text-white/30 font-medium">Your wallet is your identity. Connect to unlock searching, rewards, and the WTF zone.</p>
+              </div>
+              
+              <button 
+                onClick={connectWallet}
+                className="w-full bg-white text-indigo-900 py-6 rounded-3xl font-black text-xl hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-4 active:scale-95 group"
+              >
+                <Wallet size={24} className="group-hover:rotate-12 transition-transform" />
+                INITIATE HANDSHAKE
+              </button>
+
+              <div className="flex items-center gap-4 justify-center pt-4 opacity-50">
+                 <div className="flex -space-x-2">
+                    {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-[#07090c] bg-indigo-500/20"></div>)}
+                 </div>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">12k+ NODES CONNECTED</span>
+              </div>
+            </div>
+            
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Zero-Knowledge Proof Enabled Protocol</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main App Workspace */}
       {/* Sidebar */}
       <aside className="w-20 lg:w-72 border-r border-white/5 flex flex-col items-center lg:items-stretch py-8 px-5 bg-[#0a0c0f] relative z-20 shadow-2xl">
         <div className="flex items-center gap-4 px-3 mb-12 overflow-hidden group cursor-pointer" onClick={() => {setActiveTab('explore'); setActiveDApp(null)}}>
@@ -327,6 +390,7 @@ function App() {
             }} 
           />
           <NavItem icon={<Trophy size={22}/>} label="Rewards" active={activeTab === 'rewards'} onClick={() => {setActiveTab('rewards'); setActiveDApp(null)}} />
+          <NavItem icon={<Play size={22}/>} label="WTF Zone" active={activeTab === 'wtf-zone'} onClick={() => {setActiveTab('wtf-zone'); setActiveDApp(null)}} />
           <NavItem icon={<BookOpen size={22}/>} label="Education" active={activeTab === 'education'} onClick={() => {setActiveTab('education'); setActiveDApp(null)}} />
           <NavItem icon={<Shield size={22}/>} label="Security" active={activeTab === 'security'} onClick={() => {setActiveTab('security'); setActiveDApp(null)}} />
         </nav>
@@ -412,10 +476,15 @@ function App() {
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="hidden xl:flex items-center bg-white/5 border border-white/10 rounded-2xl px-5 py-2.5 gap-4">
+             <div className="hidden xl:flex items-center bg-white/5 border border-white/10 rounded-2xl px-5 py-2.5 gap-4">
                <div className="text-right">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-black">Points</p>
                   <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{points.toLocaleString()}</p>
+               </div>
+               <div className="w-px h-8 bg-white/10"></div>
+               <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-black">Hela</p>
+                  <p className="text-lg font-bold text-emerald-400">{helaBalance}</p>
                </div>
                <div className="w-px h-8 bg-white/10"></div>
                <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center">
@@ -686,58 +755,97 @@ function App() {
              <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-6xl mx-auto pb-20">
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                   <div className="text-center lg:text-left">
-                    <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase leading-none italic opacity-90">REWARDS HUB</h1>
-                    <p className="text-white/40 text-xl font-medium tracking-tight">Ecosystem contributions and $HELA yield tracking.</p>
+                    <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase leading-none italic opacity-90">REWARDS ENGINE</h1>
+                    <p className="text-white/40 text-xl font-medium tracking-tight">Ecosystem contributions and $HELA yield conversion.</p>
                   </div>
                   <button 
-                    onClick={claimReward}
-                    className="group relative bg-indigo-600 hover:bg-indigo-500 px-10 py-5 rounded-3xl font-black text-lg transition-all shadow-2xl shadow-indigo-600/40 active:scale-95 flex items-center gap-3"
+                    onClick={redeemPoints}
+                    className="group relative bg-[#00d1ff] hover:bg-[#00b8e6] px-10 py-5 rounded-3xl font-black text-lg transition-all shadow-2xl shadow-[#00d1ff]/20 active:scale-95 flex items-center gap-3 text-black"
                   >
                     <Zap size={24} className="group-hover:animate-bounce" />
-                    COLLECT ALL YIELD
+                    REDEEM HELA COINS
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                  <div className="col-span-1 lg:col-span-2 space-y-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                      <RewardCard icon={<Zap size={24} className="text-yellow-400"/>} label="Total Yield" value={points.toLocaleString()} subValue="+12,400 Projected" />
-                      <RewardCard icon={<CreditCard size={24} className="text-emerald-400"/>} label="Wallet Balance" value={`${balance} HELA`} subValue="Network Ready" />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                   <div className="lg:col-span-1 space-y-6">
+                      <RewardCard icon={<Zap size={20} className="text-yellow-400"/>} label="Points Balance" value={points.toLocaleString()} subValue="1000 pts = 1 Hela" />
+                      <RewardCard icon={<CreditCard size={20} className="text-emerald-400"/>} label="Hela Balance" value={`${helaBalance} HELA`} subValue="Verified Chain" />
+                   </div>
 
-                    <div className="glass-card rounded-[3rem] p-10 border-white/10">
-                      <h3 className="text-2xl font-black mb-10 tracking-tight uppercase">Contribution Pipeline</h3>
-                      <div className="space-y-8">
-                        <ActivityItem label="Liquidity Provisioning" date="ACTIVE SESSION" points={"+250 pts"} />
-                        <ActivityItem label="Market Browsing" date="4 CYCLES AGO" points={"+45 pts"} />
-                        <ActivityItem label="Node Interaction" date="SYNCED" points={"+120 pts"} />
+                   <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
+                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Browsing Rewards</h3>
+                         <p className="text-sm text-white/40 font-bold">Earn points automatically as you search and navigate the decentralized web.</p>
+                         <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center">Active: +1.5x Multiplier Enabled</div>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-10">
-                    <div className="bg-gradient-to-br from-[#6366f1] to-[#a855f7] rounded-[3rem] p-10 shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] relative overflow-hidden group border border-white/20">
-                      <div className="absolute -top-10 -right-10 w-60 h-60 bg-white/20 rounded-full blur-[80px] group-hover:scale-150 transition-transform duration-1000"></div>
-                      <h3 className="text-3xl font-black mb-4 relative z-10 leading-none">NODE ELITE</h3>
-                      <p className="text-white/90 text-base mb-10 relative z-10 font-bold italic tracking-tight opacity-70">2x Rewards Multiplier enabled for Elite users.</p>
-                      <button className="w-full bg-white text-indigo-600 font-black py-5 rounded-[2rem] hover:shadow-2xl transition-all relative z-10 active:scale-95 shadow-lg">
-                        ACTIVATE NODE
-                      </button>
-                    </div>
-
-                    <div className="glass-card rounded-[3rem] p-10 border-white/10">
-                      <h3 className="text-xl font-black mb-4 uppercase tracking-tighter">Identity Referral</h3>
-                      <p className="text-sm text-white/40 mb-8 font-bold leading-relaxed">Broadcast your signature. Earn 5,000 pts per verified node referral.</p>
-                      <div className="flex flex-col gap-4">
-                        <input type="text" readOnly value="WEBB.NET/REF/0x7K...2" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black tracking-widest text-indigo-400 focus:outline-none" />
-                        <button className="w-full glass py-4 rounded-2xl font-black hover:bg-white/10 transition-all text-sm uppercase tracking-[0.2em] border-white/10">
-                           Copy Signature
-                        </button>
+                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
+                         <h3 className="text-xl font-black uppercase tracking-tighter text-purple-400">Santa Quests</h3>
+                         <p className="text-sm text-white/40 font-bold">Complete high-value side quests to boost your neural rank and earn massive point drops.</p>
+                         <button className="w-full py-3 glass rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10">Launch Quests</button>
                       </div>
-                    </div>
-                  </div>
+                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
+                         <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-400">Partner Cashback</h3>
+                         <p className="text-sm text-white/40 font-bold">Get $HELA cashback on vouchers and transactions with our verified partner network.</p>
+                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">No Active Partners in your sector</div>
+                      </div>
+                      <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 space-y-6">
+                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Node Referrals</h3>
+                         <p className="text-sm text-white/40 font-bold">Expand the matrix by referring new nodes. Earn 5,000 pts per verified identity sync.</p>
+                         <div className="flex gap-2">
+                            <input type="text" readOnly value="WEBB.NET/0x7K...2" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-indigo-400" />
+                            <button className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase border-white/10 hover:bg-white/10 transition-all">Copy</button>
+                         </div>
+                      </div>
+                   </div>
                 </div>
              </section>
+          ) : activeTab === 'wtf-zone' ? (
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+               <div className="text-center mb-16 relative">
+                  <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-600/10 blur-[100px] -z-10"></div>
+                  <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">WTF ZONE</h1>
+                  <p className="text-white/30 text-xl font-medium tracking-tight uppercase tracking-widest">Connect your skills to the Hela economy.</p>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-red-500/20 transition-all cursor-pointer bg-gradient-to-br from-red-500/5 to-transparent">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-red-500 mb-8 group-hover:scale-110 transition-all">🐍</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Snake Terminal</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">Navigate the neural grid. Collect fragments to earn points. Highly addictive.</p>
+                     <button 
+                       onClick={() => setActiveGame('snake')}
+                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-red-500 group-hover:text-white transition-all"
+                     >
+                       PLAY & EARN
+                     </button>
+                  </div>
+
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-indigo-500/20 transition-all cursor-pointer bg-gradient-to-br from-indigo-500/5 to-transparent">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-indigo-400 mb-8 group-hover:scale-110 transition-all">🧩</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Maze Solver</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">Deconstruct complex encryption mazes. Speed is currency.</p>
+                     <button 
+                       onClick={() => setActiveGame('maze')}
+                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-indigo-500 group-hover:text-white transition-all"
+                     >
+                       PLAY & EARN
+                     </button>
+                  </div>
+
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-emerald-500/20 transition-all cursor-pointer bg-gradient-to-br from-emerald-500/5 to-transparent">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-emerald-400 mb-8 group-hover:scale-110 transition-all">🎯</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Crypto Hit</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">Aura calibration test. Hit the targets to sync with the network pulse.</p>
+                     <button 
+                       onClick={() => alert('Crypto Hit Initializing... Syncing points...')}
+                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-emerald-500 group-hover:text-white transition-all"
+                     >
+                       PLAY & EARN
+                     </button>
+                  </div>
+               </div>
+            </section>
           ) : activeTab === 'education' ? (
             <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
               <div className="text-center mb-16 relative">
@@ -1030,14 +1138,24 @@ function App() {
                              <div className="flex items-center justify-between mb-10">
                                 <h3 className="text-2xl font-black uppercase tracking-tight">Active Accounts</h3>
                                 <button 
-                                  onClick={() => setAccounts([...accounts, { id: Date.now(), name: 'New Sub-Core', address: '0x...', active: false }])}
+                                   onClick={async () => {
+                                     try {
+                                       const provider = new ethers.BrowserProvider(window.ethereum);
+                                       const signer = await provider.getSigner();
+                                       const addr = await signer.getAddress();
+                                       if(accounts.find(a => a.address === addr)) return alert('Identity already synchronized in Matrix.');
+                                       setAccounts([...accounts, { id: Date.now(), name: 'Sub-Core ' + (accounts.length + 1), address: addr, active: false }]);
+                                     } catch(e) {
+                                       alert('MetaMask authentication failed.');
+                                     }
+                                   }}
                                   className="flex items-center gap-2 text-indigo-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors"
                                 >
-                                   <UserPlus size={16} /> ADD ACCOUNT
+                                    <UserPlus size={16} /> SYNC NEW IDENTITY
                                 </button>
                              </div>
                              <div className="space-y-4">
-                                {accounts.map((acc, i) => (
+                                 {accounts.map((acc) => (
                                   <div key={acc.id} className={`flex items-center justify-between p-6 rounded-[2rem] border transition-all ${acc.active ? 'bg-indigo-600/10 border-indigo-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
                                      <div className="flex items-center gap-4">
                                         <div className={`w-3 h-3 rounded-full ${acc.active ? 'bg-indigo-400 shadow-glow' : 'bg-white/10'}`}></div>
@@ -1048,14 +1166,13 @@ function App() {
                                      </div>
                                      <div className="flex items-center gap-3">
                                         {!acc.active && (
-                                          <button 
-                                            onClick={() => setAccounts(accounts.map(a => ({...a, active: a.id === acc.id})))}
-                                            className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10"
-                                          >
-                                            Switch
-                                          </button>
-                                        )}
-                                        <button 
+                                           <button 
+                                             onClick={() => {
+                                               setAccounts(accounts.map(a => ({...a, active: a.id === acc.id})));
+                                               setWalletAddress(acc.address);
+                                               setIsWalletGateOpen(false);
+                                               setWalletAddress(acc.address);
+                                               setIsWalletGateOpen(false);
                                           onClick={() => {
                                             if(accounts.length > 1) {
                                               setAccounts(accounts.filter(a => a.id !== acc.id));
@@ -1103,6 +1220,26 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Game Overlays */}
+      {activeGame === 'snake' && (
+        <SnakeGame 
+          onExit={() => setActiveGame(null)} 
+          onScore={(score) => {
+            setPoints(prev => prev + score);
+            alert(`Neural Sync Results: +${score} Points added to your Identity.`);
+          }} 
+        />
+      )}
+      {activeGame === 'maze' && (
+        <MazeGame 
+          onExit={() => setActiveGame(null)} 
+          onScore={(score) => {
+            setPoints(prev => prev + score);
+            alert(`Maze Deconstructed: +${score} Points added to your Identity.`);
+          }} 
+        />
+      )}
     </div>
   );
 }
@@ -1142,56 +1279,147 @@ function EduCard({ title, description, icon, tag, url, onLearnMore }) {
   );
 }
 
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`w-full flex items-center gap-5 px-6 py-4.5 rounded-[1.5rem] transition-all duration-400 group relative overflow-hidden ${
-        active 
-          ? 'bg-indigo-600 shadow-[0_12px_24px_-8px_rgba(99,102,241,0.5)] nav-active-glow' 
-          : 'text-white/30 hover:text-white hover:bg-white/5'
-      }`}
-    >
-      <div className={`shrink-0 transition-all duration-500 ${active ? 'scale-110 rotate-12' : 'group-hover:scale-110 grayscale group-hover:grayscale-0'}`}>
-        {icon}
-      </div>
-      <span className={`text-base font-black lg:block tracking-[0.1em] uppercase transition-all duration-300 ${active ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}>
-        {label}
-      </span>
-      {active && <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>}
-    </button>
-  );
-}
 
-function RewardCard({ icon, label, value, subValue }) {
+
+function SnakeGame({ onExit, onScore }) {
+  const [snake, setSnake] = useState([[5, 5]]);
+  const [food, setFood] = useState([10, 10]);
+  const [direction, setDirection] = useState([0, 1]);
+  const [gameOver, setGameOver] = useState(false);
+  const [currentScore, setCurrentScore] = useState(0);
+
+  useEffect(() => {
+    if (gameOver) return;
+    const interval = setInterval(() => {
+      setSnake(prev => {
+        const newHead = [prev[0][0] + direction[0], prev[0][1] + direction[1]];
+        if (newHead[0] < 0 || newHead[0] >= 20 || newHead[1] < 0 || newHead[1] >= 20 || prev.some(s => s[0] === newHead[0] && s[1] === newHead[1])) {
+          setGameOver(true);
+          return prev;
+        }
+        const newSnake = [newHead, ...prev];
+        if (newHead[0] === food[0] && newHead[1] === food[1]) {
+          setCurrentScore(s => s + 10);
+          setFood([Math.floor(Math.random() * 20), Math.floor(Math.random() * 20)]);
+        } else {
+          newSnake.pop();
+        }
+        return newSnake;
+      });
+    }, 150);
+    return () => clearInterval(interval);
+  }, [direction, food, gameOver]);
+
   return (
-    <div className="glass-card rounded-[2.5rem] p-8 hover:border-indigo-500/20 transition-all">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center shadow-lg">
-          {icon}
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-500 px-6">
+      <div className="glass-card max-w-2xl w-full p-12 rounded-[4rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-4xl font-black uppercase tracking-tighter italic">SNAKE <span className="text-indigo-400">TERMINAL</span></h2>
+            <p className="text-white/30 text-xs font-bold uppercase tracking-widest mt-2">Neural Coordination Test</p>
+          </div>
+          <div className="text-right">
+             <p className="text-[10px] font-black uppercase text-white/20 tracking-widest">Local Score</p>
+             <p className="text-3xl font-black text-indigo-400 tracking-tighter">{currentScore}</p>
+          </div>
         </div>
-        <span className="text-xs text-white/30 font-black uppercase tracking-[0.2em]">{label}</span>
+
+        <div className="aspect-square w-full max-w-[400px] mx-auto bg-black/40 rounded-[2rem] border-2 border-white/5 relative mb-12 grid grid-cols-20 grid-rows-20 p-2">
+           {gameOver ? (
+             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10 rounded-[1.8rem]">
+                <h3 className="text-4xl font-black uppercase italic mb-4">CRITICAL FAILURE</h3>
+                <p className="text-white/40 font-bold mb-8 italic text-center">Neural sync lost at {currentScore} cycles.</p>
+                <div className="flex gap-4">
+                   <button onClick={() => { setSnake([[5, 5]]); setGameOver(false); setCurrentScore(0); }} className="px-8 py-4 bg-indigo-600 rounded-2xl font-black uppercase text-sm">Restart Sync</button>
+                   <button onClick={() => { onScore(currentScore); onExit(); }} className="px-8 py-4 glass rounded-2xl font-black uppercase text-sm border-white/10">Exit Matrix</button>
+                </div>
+             </div>
+           ) : (
+             <>
+               {snake.map((s, i) => (
+                 <div key={i} style={{ gridColumnStart: s[1] + 1, gridRowStart: s[0] + 1 }} className={`w-full h-full rounded-sm ${i === 0 ? 'bg-indigo-400 shadow-glow z-10' : 'bg-indigo-400/30'}`}></div>
+               ))}
+               <div style={{ gridColumnStart: food[1] + 1, gridRowStart: food[0] + 1 }} className="w-full h-full bg-emerald-400 rounded-full shadow-glow-emerald animate-pulse"></div>
+             </>
+           )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 max-w-[200px] mx-auto">
+           <div />
+           <button onClick={() => setDirection([-1, 0])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="-rotate-90 translate-y-[-2px] text-white/40" /></button>
+           <div />
+           <button onClick={() => setDirection([0, -1])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="rotate-180 translate-x-[-2px] text-white/40" /></button>
+           <button onClick={() => setDirection([1, 0])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="rotate-90 translate-y-[2px] text-white/40" /></button>
+           <button onClick={() => setDirection([0, 1])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="translate-x-[2px] text-white/40" /></button>
+        </div>
+
+        <p className="mt-12 text-center text-[10px] text-white/10 font-black uppercase tracking-[0.4em]">Use Directional Pad or Arrow Keys to navigate</p>
       </div>
-      <div className="text-4xl font-black mb-2 tracking-tighter">{value}</div>
-      <div className="text-sm text-indigo-400 font-bold italic tracking-wide">{subValue}</div>
     </div>
   )
 }
 
-function ActivityItem({ label, date, points }) {
+function MazeGame({ onExit, onScore }) {
+  const [level, setLevel] = useState(1);
+  const [solved, setSolved] = useState(false);
+
   return (
-    <div className="flex items-center justify-between group py-2">
-      <div className="flex items-center gap-5">
-        <div className="w-3 h-3 bg-indigo-500/30 rounded-full group-hover:bg-indigo-500 transition-colors shadow-glow"></div>
-        <div>
-          <div className="font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight text-base leading-none mb-1">{label}</div>
-          <div className="text-[10px] text-white/20 font-black tracking-widest">{date}</div>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in fade-in duration-500 px-6">
+      <div className="glass-card max-w-2xl w-full p-12 rounded-[4rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-purple-900/10 to-transparent">
+        <div className="text-center space-y-8">
+          <div className="w-20 h-20 bg-indigo-600/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+             <Layers size={40} className="text-indigo-400 animate-pulse" />
+          </div>
+          <h2 className="text-4xl font-black uppercase italic tracking-tighter">MAZE <span className="text-purple-400">SOLVER</span></h2>
+          <p className="text-white/40 font-medium">Algorithmic Pathfinding Simulation</p>
+          
+          <div className="py-12 glass rounded-[2rem] border-white/5 bg-black/40 relative group overflow-hidden">
+             <div className="absolute inset-0 flex items-center justify-center">
+                {!solved ? (
+                  <div className="space-y-6">
+                    <p className="text-indigo-400 font-black animate-pulse">SOLVING ENCRYPTION LAYER {level}...</p>
+                    <div className="w-48 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
+                       <div className="h-full bg-indigo-500 animate-[loading_3s_linear_infinite]"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <CheckCircle size={64} className="text-emerald-400 mx-auto" />
+                    <p className="text-2xl font-black uppercase text-emerald-400 tracking-tighter">LAYER DECONSTRUCTED</p>
+                  </div>
+                )}
+             </div>
+             <style>{`
+               @keyframes loading {
+                 0% { width: 0%; }
+                 100% { width: 100%; }
+               }
+             `}</style>
+          </div>
+
+          {!solved ? (
+            <button 
+              onClick={() => {
+                setTimeout(() => {
+                  setSolved(true);
+                  onScore(150 * level);
+                }, 3000);
+              }}
+              className="w-full bg-white text-indigo-900 py-5 rounded-2xl font-black text-lg hover:shadow-2xl transition-all"
+            >
+              EXECUTE SOLVER
+            </button>
+          ) : (
+            <div className="flex gap-4">
+              <button onClick={() => { setLevel(l => l + 1); setSolved(false); }} className="flex-1 bg-indigo-600 py-5 rounded-2xl font-black text-lg">Next Level</button>
+              <button onClick={onExit} className="flex-1 glass py-5 rounded-2xl font-black text-lg border-white/10">Exit Matrix</button>
+            </div>
+          )}
         </div>
       </div>
-      <div className="text-sm font-black text-indigo-400 bg-indigo-400/10 px-4 py-2 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all">{points}</div>
     </div>
   )
 }
 
-// Final Synchronization Signature: 0x817a68d-matrix-core-v3.0-live-sync
+// Final Synchronization Signature: 0x817a68d-matrix-core-v5.0-playwall-complete
 export default App;
