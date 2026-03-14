@@ -96,6 +96,15 @@ function App() {
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [redeemAmount, setRedeemAmount] = useState(1000);
 
+  // New Modals
+  const [showQuestModal, setShowQuestModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  
+  // Quest States
+  const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
+  const [articleTimer, setArticleTimer] = useState(0);
+
   // Profile & Accounts State
   const [userProfile, setUserProfile] = useState(() => {
     const saved = localStorage.getItem('web3_profile');
@@ -118,6 +127,29 @@ function App() {
   useEffect(() => {
     localStorage.setItem('web3_accounts', JSON.stringify(accounts));
   }, [accounts]);
+
+  // Education Article Quest Timer
+  useEffect(() => {
+    let interval;
+    if (activeTab === 'explore' && activeDApp && activeDApp.category === 'Education' && activeQuests.includes('scholar')) {
+      interval = setInterval(() => {
+        setArticleTimer(prev => {
+          if (prev >= 9) {
+            // Reached 10 seconds
+            clearInterval(interval);
+            setActiveQuests(q => q.filter(x => x !== 'scholar'));
+            claimReward('wtf_quest_action');
+            alert('Scholar Quest Complete: +5 Points Synchronized!');
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      setArticleTimer(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeTab, activeDApp, activeQuests]);
 
   // Check if activeDApp can be framed securely
   useEffect(() => {
@@ -898,30 +930,22 @@ function App() {
                          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative z-10">Active: +1.5x Multiplier Enabled</div>
                       </div>
                       
-                      {/* Santa Quests */}
+                      {/* WTF Quests */}
                       <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
                          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
                            <Trophy size={100} />
                          </div>
                          <div className="flex justify-between items-start relative z-10">
-                           <h3 className="text-xl font-black uppercase tracking-tighter text-purple-400">Santa Quests</h3>
-                           <span className="text-[10px] font-black bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full border border-purple-500/30">+2,000 PTS</span>
+                           <h3 className="text-xl font-black uppercase tracking-tighter text-purple-400">WTF Quests</h3>
+                           <span className="text-[10px] font-black bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full border border-purple-500/30">Up to +50 PTS</span>
                          </div>
-                         <p className="text-sm text-white/40 font-bold relative z-10">Complete high-value side quests to boost your neural rank and earn massive point drops.</p>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Complete high-value side quests to boost your neural rank and earn point drops.</p>
                          <button 
-                           onClick={async () => {
-                             if (!walletAddress) return alert('Connect wallet first');
-                             setIsQuesting(true);
-                             setTimeout(async () => {
-                               await claimReward('santa_quest');
-                               setIsQuesting(false);
-                             }, 1500);
-                           }}
-                           disabled={isQuesting}
+                           onClick={() => setShowQuestModal(true)}
                            className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-purple-500/20 hover:text-white transition-all border-white/10 hover:border-purple-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
                          >
-                           {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <Play size={14} />}
-                           {isQuesting ? 'SYNCING...' : 'Launch Quests'}
+                           <Play size={14} />
+                           Launch Quests
                          </button>
                       </div>
 
@@ -936,19 +960,11 @@ function App() {
                          </div>
                          <p className="text-sm text-white/40 font-bold relative z-10">Get points cashback on vouchers and simulated transactions with our verified partner network.</p>
                          <button 
-                           onClick={async () => {
-                             if (!walletAddress) return alert('Connect wallet first');
-                             setIsCashbacking(true);
-                             setTimeout(async () => {
-                               await claimReward('partner_cashback');
-                               setIsCashbacking(false);
-                             }, 1000);
-                           }}
-                           disabled={isCashbacking}
+                           onClick={() => setShowVoucherModal(true)}
                            className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 hover:text-white transition-all border-white/10 hover:border-emerald-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
                          >
-                           {isCashbacking ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <ShoppingCart size={14} />}
-                           {isCashbacking ? 'PROCESSING...' : 'Simulate Purchase'}
+                           <ShoppingCart size={14} />
+                           Voucher Grid
                          </button>
                       </div>
 
@@ -959,25 +975,15 @@ function App() {
                          </div>
                          <div className="flex justify-between items-start relative z-10">
                            <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Node Referrals</h3>
-                           <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30">+5,000 PTS</span>
+                           <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30">+50 PTS</span>
                          </div>
-                         <p className="text-sm text-white/40 font-bold relative z-10">Expand the matrix by referring new nodes. Earn 5,000 pts per verified identity sync.</p>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Expand the matrix by referring new nodes. Earn 50 pts per verified identity sync.</p>
                          <div className="flex gap-2 relative z-10 mt-auto">
-                            <input type="text" readOnly value={`WEBB.NET/${walletAddress ? walletAddress.substring(0,6) : 'PROXY'}`} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-black tracking-widest text-indigo-400 focus:outline-none" />
                             <button 
-                              onClick={async () => {
-                                if (!walletAddress) return alert('Connect wallet first');
-                                setIsReferring(true);
-                                setTimeout(async () => {
-                                  await claimReward('node_referral');
-                                  setIsReferring(false);
-                                  alert('Referral Sync Simulated: Points Added!');
-                                }, 2000);
-                              }}
-                              disabled={isReferring}
-                              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black uppercase border-white/10 transition-all shadow-lg active:scale-95 flex items-center justify-center min-w-[100px]"
+                              onClick={() => setShowShareModal(true)}
+                              className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black uppercase border-white/10 transition-all shadow-lg active:scale-95 flex items-center justify-center"
                             >
-                              {isReferring ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Copy'}
+                              Share Node
                             </button>
                          </div>
                       </div>
@@ -1506,6 +1512,173 @@ function App() {
               >
                 Confirm Sync
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quest Modal */}
+      {showQuestModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+          <div className="glass-card max-w-lg w-full p-8 rounded-[3rem] border-purple-500/20 relative overflow-hidden bg-gradient-to-br from-purple-900/10 to-transparent">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-1 text-purple-400">WTF <span className="text-white">QUESTS</span></h2>
+                <p className="text-white/40 text-sm font-bold">Complete neural sync tasks for points.</p>
+              </div>
+              <button onClick={() => setShowQuestModal(false)} className="w-10 h-10 flex items-center justify-center glass rounded-full hover:bg-white/10 transition-all active:scale-95 text-white/50"><X size={18} /></button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Scholar Quest */}
+              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-purple-500/30 transition-all">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400"><Layers size={20} /></div>
+                    <div>
+                      <div className="font-black uppercase tracking-tight text-sm text-white">The Scholar</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Read an Education Article for 10s</div>
+                    </div>
+                 </div>
+                 {activeQuests.includes('scholar') ? (
+                    <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
+                 ) : (
+                    <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); setActiveTab('education'); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
+                 )}
+              </div>
+
+              {/* Explorer Quest */}
+              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400"><Globe size={20} /></div>
+                    <div>
+                      <div className="font-black uppercase tracking-tight text-sm text-white">The Explorer</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
+                    </div>
+                 </div>
+                 <button onClick={() => { claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('dapps'); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
+              </div>
+
+              {/* Gamer Quest */}
+              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-red-500/30 transition-all">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400"><Activity size={20} /></div>
+                    <div>
+                      <div className="font-black uppercase tracking-tight text-sm text-white">The Gamer</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
+                    </div>
+                 </div>
+                 <button onClick={() => { claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('wtf-zone'); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
+              </div>
+            </div>
+            
+            <button onClick={async () => {
+                 if (!walletAddress) return alert('Connect wallet first');
+                 setIsQuesting(true);
+                 setTimeout(async () => {
+                   await claimReward('wtf_quest');
+                   setIsQuesting(false);
+                   setShowQuestModal(false);
+                   alert('Daily Main Quest Sync Complete: +50 Points!');
+                 }, 1500);
+               }}
+               disabled={isQuesting} className="w-full mt-6 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 border border-white/10">
+                 {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Complete Daily Check-in (+50)'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+          <div className="glass-card max-w-sm w-full p-8 rounded-[3rem] border-indigo-500/20 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent text-center">
+            <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-indigo-400"><Users size={32} /></div>
+            <h2 className="text-2xl font-black uppercase tracking-tighter italic mb-2">SHARE <span className="text-indigo-400">NODE</span></h2>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-8">Broadcast your identity to expand the matrix and earn 50 PTS.</p>
+            
+            <div className="space-y-3 mb-6">
+               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
+               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
+               <button onClick={() => { window.open('https://t.me/share/url?url=https://web3browser.com&text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
+            </div>
+            
+            <button onClick={() => setShowShareModal(false)} className="text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors tracking-widest">Close Matrix</button>
+          </div>
+        </div>
+      )}
+
+      {/* Voucher Modal */}
+      {showVoucherModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+          <div className="glass-card max-w-4xl w-full p-10 rounded-[3rem] border-emerald-500/20 relative overflow-hidden bg-gradient-to-br from-emerald-900/10 to-transparent max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-start mb-8 shrink-0">
+              <div>
+                <h2 className="text-4xl font-black uppercase tracking-tighter italic mb-1 text-emerald-400">PARTNER <span className="text-white">VOUCHERS</span></h2>
+                <p className="text-white/40 text-sm font-bold">Redeem points for real-world assets or simulate purchases to earn cashback.</p>
+              </div>
+              <button onClick={() => setShowVoucherModal(false)} className="w-12 h-12 flex items-center justify-center glass rounded-full hover:bg-white/10 transition-all active:scale-95 text-white/50"><X size={24} /></button>
+            </div>
+            
+            <div className="flex items-center justify-between mb-8 shrink-0 bg-black/20 p-6 rounded-3xl border border-white/5">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-yellow-400/20 rounded-2xl flex items-center justify-center"><Zap size={24} className="text-yellow-400" /></div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase text-white/40 tracking-widest">Available Points</div>
+                    <div className="text-2xl font-black text-white">{points.toLocaleString()} PTS</div>
+                  </div>
+               </div>
+               <button 
+                 onClick={async () => {
+                   if (!walletAddress) return alert('Connect wallet first');
+                   setIsCashbacking(true);
+                   try {
+                     await fetch(`${API_URL}/rewards/claim`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ wallet_address: walletAddress, activity_type: 'partner_cashback' })
+                     });
+                     setPoints(p => p + 500);
+                     alert('Cashback Simulated: +500 Points added!');
+                   } finally {
+                     setIsCashbacking(false);
+                   }
+                 }}
+                 disabled={isCashbacking}
+                 className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 border border-emerald-400/30"
+               >
+                 {isCashbacking ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <ShoppingCart size={14} />}
+                 {isCashbacking ? 'Processing...' : 'Simulate Purchase (+500)'}
+               </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-4 pb-4 custom-scrollbar">
+               {[
+                 { brand: 'Amazon', value: '$10 Gift Card', icon: '🛒', cost: 10000, color: 'hover:border-yellow-500/50 hover:bg-yellow-500/10' },
+                 { brand: 'Apple', value: '$25 Gift Card', icon: '🍎', cost: 25000, color: 'hover:border-white/50 hover:bg-white/10' },
+                 { brand: 'Flipkart', value: '₹500 Voucher', icon: '🛍️', cost: 5000, color: 'hover:border-blue-500/50 hover:bg-blue-500/10' },
+                 { brand: 'Croma', value: '10% Discount', icon: '💻', cost: 2000, color: 'hover:border-teal-500/50 hover:bg-teal-500/10' },
+                 { brand: 'Myntra', value: '₹1000 Voucher', icon: '👗', cost: 10000, color: 'hover:border-pink-500/50 hover:bg-pink-500/10' },
+                 { brand: 'Steam', value: '$20 Wallet', icon: '🎮', cost: 20000, color: 'hover:border-indigo-500/50 hover:bg-indigo-500/10' },
+               ].map((v, i) => (
+                  <div key={i} className={`glass rounded-[2rem] p-6 border-white/5 transition-all group cursor-pointer ${v.color}`}>
+                     <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">{v.icon}</div>
+                     <h3 className="text-xl font-black uppercase tracking-tight text-white mb-1">{v.brand}</h3>
+                     <p className="text-sm font-bold text-white/40 mb-6">{v.value}</p>
+                     <div className="flex items-center justify-between mt-auto">
+                        <span className="text-[10px] font-black uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-lg text-white/70">{v.cost.toLocaleString()} PTS</span>
+                        <button 
+                          onClick={() => {
+                            if (points < v.cost) return alert('Insufficient points for this voucher.');
+                            setPoints(p => p - v.cost);
+                            alert(`Success! Check your registered email for the ${v.brand} voucher code.`);
+                          }}
+                          className="px-4 py-2 glass rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all"
+                        >
+                          Redeem
+                        </button>
+                     </div>
+                  </div>
+               ))}
             </div>
           </div>
         </div>
