@@ -1112,9 +1112,22 @@ function App() {
                   <h1 className="text-4xl font-black tracking-tighter text-white uppercase">{userProfile.name}</h1>
                   <p className="text-sm text-indigo-300/70 font-bold tracking-widest uppercase mt-1">{userProfile.bio}</p>
                 </div>
-                {/* Avatar floating on banner */}
+                {/* Avatar floating on banner - clickable upload */}
                 <div className="absolute bottom-[-30px] right-10">
-                  <div className="relative">
+                  <div className="relative group cursor-pointer" onClick={() => document.getElementById('avatar-upload').click()}>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setUserProfile({...userProfile, avatar: ev.target.result});
+                        reader.readAsDataURL(file);
+                      }}
+                    />
                     <div className="absolute inset-0 rounded-[2rem] blur-xl bg-indigo-500/50 scale-110" />
                     <div className="relative w-24 h-24 rounded-[2rem] border-4 border-[#0f172a] shadow-2xl overflow-hidden" style={{background: 'linear-gradient(135deg, #6366f1, #a855f7)'}}>
                       {userProfile.avatar ? (
@@ -1124,6 +1137,11 @@ function App() {
                           <User size={38} className="text-white" />
                         </div>
                       )}
+                      {/* Hover overlay with camera icon */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        <span className="text-white text-[8px] font-black uppercase tracking-widest">Upload</span>
+                      </div>
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-[#0f172a] shadow-lg" />
                   </div>
