@@ -110,8 +110,28 @@ function App() {
   const [sendRecipient, setSendRecipient] = useState('');
   const [sendAmount, setSendAmount] = useState('');
   const [isTxPending, setIsTxPending] = useState(false);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
-  
+
+  // Sync balance and network periodically
+  useEffect(() => {
+    if (walletAddress && showWalletModal) {
+      const syncWallet = async () => {
+        const isCorrect = await checkNetworkStatus();
+        setIsCorrectNetwork(isCorrect);
+        if (isCorrect) {
+          await fetchHLUSDBalance(walletAddress);
+          setLastRefresh(Date.now());
+        }
+      };
+
+      syncWallet(); // Initial sync
+      const interval = setInterval(syncWallet, 10000); // Every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [walletAddress, showWalletModal]);
+
   // Browser Tab System
   const [tabs, setTabs] = useState([
     { 
@@ -381,6 +401,17 @@ function App() {
     }
   };
 
+  const truncateAddress = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
+  const isValidAddress = (addr) => /^0x[a-fA-F0-9]{40}$/.test(addr);
+  const checkNetworkStatus = async () => {
+    if (!window.ethereum) return false;
+    try {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      return chainId === '0xa2d18';
+    } catch (e) {
+      return false;
+    }
+  };
 
   const checkNetwork = async () => {
     if (!window.ethereum) return false;
@@ -438,10 +469,15 @@ function App() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(HLUSD_CONTRACT, ERC20_ABI, signer);
+      
       const tx = await contract.transfer(to, ethers.parseUnits(amount, 18));
       return tx;
     } catch (e) {
       console.error('Send HLUSD failed', e);
+      // provide more detail in the alert
+      if (e.reason) alert(`Error: ${e.reason}`);
+      else if (e.message && e.message.includes('user rejected')) alert('Transaction rejected by user.');
+      else alert(`Transaction failed: ${e.code || 'Unknown Error'}`);
       throw e;
     }
   };
@@ -563,7 +599,6 @@ function App() {
     return false;
   };
 
-  const truncateAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
 
   return (
     <div className={`flex w-full h-screen bg-[#07090c] text-white selection:bg-indigo-500/30 font-sans`}>
@@ -1742,19 +1777,52 @@ function App() {
             </div>
 
             <div className="min-h-[300px] flex flex-col">
-               {activeWalletTab === 'assets' && (
+                {activeWalletTab === 'assets' && (
                  <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {!isCorrectNetwork && (
+                      <div className="w-full mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400">
+                        <AlertTriangle size={20} className="shrink-0" />
+                        <div className="flex-1">
+                          <div className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Incorrect Network</div>
+                          <div className="text-[10px] font-medium opacity-70">Switch to Hela Testnet to view balance.</div>
+                        </div>
+                        <button 
+                          onClick={checkNetwork}
+                          className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+                        >
+                          Switch
+                        </button>
+                      </div>
+                    )}
                     <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl relative">
                        <CreditCard size={40} className="text-white" />
-                       <div className="absolute -top-2 -right-2 bg-emerald-400 w-6 h-6 rounded-full border-4 border-[#07090c] shadow-glow" />
+                       <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-4 border-[#07090c] shadow-glow ${isCorrectNetwork ? 'bg-emerald-400' : 'bg-red-500'}`} />
                     </div>
                     <div className="text-center">
-                       <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Available Balance</div>
-                       <div className="text-5xl font-black text-white tracking-tighter mb-2">{parseFloat(hlusdBalance).toFixed(4)}</div>
+                       <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">
+                          Available Balance
+                          <button 
+                            onClick={async () => {
+                              const isCorrect = await checkNetworkStatus();
+                              setIsCorrectNetwork(isCorrect);
+                              if (isCorrect) fetchHLUSDBalance(walletAddress);
+                              setLastRefresh(Date.now());
+                            }}
+                            className="p-1 hover:bg-white/5 rounded-md text-indigo-400 hover:text-white transition-all"
+                            title="Refresh Balance"
+                          >
+                            <RefreshCw size={10} className={showWalletModal ? "animate-pulse" : ""} />
+                          </button>
+                       </div>
+                       <div className="text-5xl font-black text-white tracking-tighter mb-2">
+                          {isCorrectNetwork ? parseFloat(hlusdBalance).toFixed(4) : '---'}
+                       </div>
                        <div className="text-xl font-bold text-indigo-400 tracking-widest uppercase">HLUSD</div>
+                       
                        <div className="mt-8 flex flex-col gap-2">
                           <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Connected via MetaMask</div>
                           <div className="text-xs font-mono text-white/40 bg-white/5 px-4 py-2 rounded-xl border border-white/5">{truncateAddress(walletAddress)}</div>
+                          <div className="text-[8px] font-black uppercase tracking-widest text-white/10 mt-1">Last synced: {new Date(lastRefresh).toLocaleTimeString()}</div>
                        </div>
                     </div>
                  </div>
@@ -1792,6 +1860,7 @@ function App() {
                        <button 
                         onClick={async () => {
                           if (!sendRecipient || !sendAmount) return alert('Enter recipient and amount.');
+                          if (!isValidAddress(sendRecipient)) return alert('Invalid EVM address format.');
                           if (parseFloat(sendAmount) > parseFloat(hlusdBalance)) return alert('Insufficient HLUSD balance.');
                           setIsTxPending(true);
                           try {
@@ -1808,10 +1877,10 @@ function App() {
                             setIsTxPending(false);
                           }
                         }}
-                        disabled={isTxPending || !sendRecipient || !sendAmount}
-                        className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3"
+                        disabled={isTxPending || !sendRecipient || !sendAmount || !isCorrectNetwork}
+                        className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed text-white rounded-[1.5rem] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3"
                        >
-                         {isTxPending ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <><ArrowUpRight size={20} /> INITIATE TRANSFER</>}
+                         {isTxPending ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <><ArrowUpRight size={20} /> {isCorrectNetwork ? 'INITIATE TRANSFER' : 'SWITCH NETWORK'}</>}
                        </button>
                     </div>
                  </div>
