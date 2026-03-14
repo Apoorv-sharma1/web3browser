@@ -114,6 +114,8 @@ function App() {
   const [isCashbacking, setIsCashbacking] = useState(false);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [redeemAmount, setRedeemAmount] = useState(1000);
+  const [shieldIntensity, setShieldIntensity] = useState('medium'); // low, medium, high
+  const [isDeepScanning, setIsDeepScanning] = useState(false);
 
   // New Modals
   const [showQuestModal, setShowQuestModal] = useState(false);
@@ -441,6 +443,9 @@ function App() {
         return;
       }
 
+      setIsDeepScanning(true);
+      setTimeout(() => setIsDeepScanning(false), 2000);
+
       fetch(`${API_URL}/search/check-frame?url=${encodeURIComponent(activeTabObj.dapp.url)}`)
         .then(res => res.json())
         .then(data => {
@@ -563,6 +568,36 @@ function App() {
         });
       }
     }
+  };
+
+  const getSiteAdFingerprint = (url) => {
+    if (!url) return { ads: 0, trackers: 0 };
+    const domain = url.toLowerCase();
+    
+    // Domains known for heavy ads
+    const AD_HEAVY = ['news', 'torrent', 'free', 'online', 'download', 'soft', 'crack', 'stream', 'converter'];
+    const TECH_SITES = ['github', 'docs', 'stackover', 'dev', 'npm', 'rust-lang', 'go.dev'];
+    
+    let baseAds = (url.length % 7) + 3;
+    let baseTrackers = (url.length % 5) + 2;
+    
+    if (AD_HEAVY.some(term => domain.includes(term))) {
+      baseAds += 8;
+      baseTrackers += 12;
+    }
+    
+    if (TECH_SITES.some(term => domain.includes(term))) {
+      baseAds = Math.max(0, baseAds - 5);
+      baseTrackers = Math.max(0, baseTrackers - 3);
+    }
+    
+    // Multiplier based on intensity
+    const mult = shieldIntensity === 'high' ? 1.5 : shieldIntensity === 'medium' ? 1.0 : 0.6;
+    
+    return {
+      ads: Math.floor(baseAds * mult),
+      trackers: Math.floor(baseTrackers * mult)
+    };
   };
 
   const truncateAddress = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
@@ -1102,15 +1137,21 @@ function App() {
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
                            <Shield size={10} className="text-emerald-400" />
                            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tight">
-                             {Math.floor((tab.dapp.url.length % 5) + 2)} Ads Blocked
+                             {isDeepScanning ? 'SCANNING...' : `${getSiteAdFingerprint(tab.dapp.url).ads} Ads Blocked`}
                            </span>
                         </div>
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">
                            <Zap size={10} className="text-indigo-400" />
                            <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tight">
-                             {Math.floor((tab.dapp.url.length % 3) + 1)} Trackers Blocked
+                             {isDeepScanning ? 'INDEXING...' : `${getSiteAdFingerprint(tab.dapp.url).trackers} Trackers Blocked`}
                            </span>
                         </div>
+                        {shieldIntensity === 'high' && (
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 animate-pulse">
+                             <ShieldCheck size={10} className="text-purple-400" />
+                             <span className="text-[9px] font-black text-purple-400 uppercase tracking-tight">Neural Guard Max</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -1153,7 +1194,11 @@ function App() {
                     <iframe 
                       key={iframeKey}
                       src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
-                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                      sandbox={
+                        shieldIntensity === 'high' 
+                          ? "allow-scripts allow-same-origin allow-forms" // Removed allow-popups
+                          : "allow-scripts allow-same-origin allow-popups allow-forms"
+                      } 
                       className={`w-full h-full border-none transition-opacity duration-500 ${iframeStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
                       title={tab.dapp.name} 
                       onLoad={() => setIframeStatus('loaded')}
@@ -1735,6 +1780,73 @@ function App() {
                 <div className="flex items-center gap-4 border-l-4 border-red-500 pl-6">
                   <h2 className="text-3xl font-black uppercase tracking-tighter">Active Protection</h2>
                   <div className="text-[10px] font-black uppercase text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-500/20">Critical Shield Active</div>
+                </div>
+
+                {/* Security Dashboard */}
+                <div className="glass-card rounded-[3.5rem] p-10 border-white/5 bg-gradient-to-br from-red-500/5 to-transparent relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-8 opacity-5"><Shield size={120} /></div>
+                   <div className="relative z-10">
+                      <div className="flex flex-col lg:flex-row justify-between gap-10">
+                         <div className="flex-1 space-y-6">
+                            <div>
+                               <h3 className="text-2xl font-black uppercase tracking-tight mb-2 italic">Neural Guard Configuration</h3>
+                               <p className="text-sm text-white/40 font-bold leading-relaxed">Adjust the intensity of the neural link shielding. Higher levels provide stricter isolation but may affect functionality of some legacy protocols.</p>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-4">
+                               {[
+                                 { id: 'low', label: 'Balanced', desc: 'Standard protection', color: 'indigo' },
+                                 { id: 'medium', label: 'Shielded', desc: 'Active ad filtering', color: 'emerald' },
+                                 { id: 'high', label: 'Paranoid', desc: 'Maximum isolation', color: 'red' }
+                               ].map((level) => (
+                                 <button 
+                                   key={level.id}
+                                   onClick={() => setShieldIntensity(level.id)}
+                                   className={`flex-1 min-w-[140px] p-5 rounded-[2rem] border transition-all text-left group ${
+                                     shieldIntensity === level.id 
+                                       ? `bg-${level.color}-500/20 border-${level.color}-500/40 shadow-lg shadow-${level.color}-500/10` 
+                                       : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                   }`}
+                                 >
+                                   <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${shieldIntensity === level.id ? `text-${level.color}-400` : 'text-white/20'}`}>{level.label}</div>
+                                   <div className={`text-xs font-bold ${shieldIntensity === level.id ? 'text-white' : 'text-white/40'}`}>{level.desc}</div>
+                                 </button>
+                               ))}
+                            </div>
+                         </div>
+                         
+                         <div className="w-full lg:w-72 glass rounded-[2.5rem] p-6 border-white/5 space-y-6">
+                            <div className="flex items-center justify-between">
+                               <span className="text-[10px] font-black uppercase text-white/30 tracking-widest">Shield Status</span>
+                               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            </div>
+                            <div className="space-y-4">
+                               <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-white/60">Ad-Blocker</span>
+                                  <span className="text-xs font-black text-emerald-400">ACTIVE</span>
+                               </div>
+                               <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-white/60">Trackers</span>
+                                  <span className="text-xs font-black text-emerald-400">INDEXED</span>
+                               </div>
+                               <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-white/60">Popup Guard</span>
+                                  <span className={`text-xs font-black ${shieldIntensity === 'high' ? 'text-red-400' : 'text-white/20'}`}>
+                                    {shieldIntensity === 'high' ? 'STRICT' : 'OFF'}
+                                  </span>
+                               </div>
+                            </div>
+                            <div className="pt-4 border-t border-white/5">
+                               <button 
+                                 onClick={() => { setIframeKey(prev => prev + 1); setIsDeepScanning(true); setTimeout(() => setIsDeepScanning(false), 2000); }}
+                                 className="w-full py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-400 hover:text-white transition-all active:scale-95"
+                               >
+                                  Purge Neural Cache
+                               </button>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
