@@ -102,6 +102,55 @@ function App() {
   const [dappList, setDappList] = useState(DAPPS);
   const [helaBalance, setHelaBalance] = useState('0.00');
   const [isWalletGateOpen, setIsWalletGateOpen] = useState(true);
+  const [rewardHistory, setRewardHistory] = useState([]);
+  const [iframeKey, setIframeKey] = useState(0); // For forcing iframe reloads
+  
+  // Wallet Persistence & Auto-Reconnection
+  useEffect(() => {
+    const savedAddress = localStorage.getItem('wallet_address');
+    if (savedAddress) {
+       setWalletAddress(savedAddress);
+       setIsWalletGateOpen(false);
+    }
+
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then(accounts => {
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+            setIsWalletGateOpen(false);
+            localStorage.setItem('wallet_address', accounts[0]);
+          }
+        });
+    }
+  }, []);
+
+  // Sync Rewards when wallet changes
+  useEffect(() => {
+    if (walletAddress) {
+       fetch(`${API_URL}/rewards/${walletAddress}`)
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) {
+              const totalPoints = data.reduce((acc, curr) => acc + curr.points, 0);
+              const totalHelaReward = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
+              setPoints(totalPoints);
+              setHelaBalance(totalHelaReward.toFixed(2));
+              setRewardHistory(data);
+            }
+          })
+          .catch(err => console.error('Fetch rewards failed', err));
+    }
+  }, [walletAddress]);
+
+  // Passive Points Timer
+  useEffect(() => {
+    if (!walletAddress) return;
+    const interval = setInterval(() => {
+       claimReward('dapp_interaction');
+    }, 60000); // 1 point per minute
+    return () => clearInterval(interval);
+  }, [walletAddress]);
   
   // UI States for Rewards
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -123,7 +172,6 @@ function App() {
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
-  const [rewardHistory, setRewardHistory] = useState([]);
 
   // Sync balance and network periodically
   useEffect(() => {
@@ -141,8 +189,13 @@ function App() {
       if (window.ethereum) {
         window.ethereum.on('chainChanged', syncWallet);
         window.ethereum.on('accountsChanged', (accounts) => {
-          if (accounts.length > 0) setWalletAddress(accounts[0]);
-          else setWalletAddress('');
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+            localStorage.setItem('wallet_address', accounts[0]);
+          } else {
+            setWalletAddress('');
+            localStorage.removeItem('wallet_address');
+          }
           syncWallet();
         });
       }
@@ -534,6 +587,8 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ wallet_address: address })
         });
+        
+        localStorage.setItem('wallet_address', address);
 
         // Log connection
         fetch(`${API_URL}/wallet/connect`, {
@@ -597,7 +652,7 @@ function App() {
     }
   };
 
-  const claimReward = async (activityType = 'dapp_interaction') => {
+  const claimReward = async (activityType = 'dapp_interaction', score = 0) => {
     // ...existing claimReward logic...
     if (!walletAddress) return alert('Connect wallet first');
     
@@ -605,7 +660,7 @@ function App() {
       const res = await fetch(`${API_URL}/rewards/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet_address: walletAddress, activity_type: activityType })
+        body: JSON.stringify({ wallet_address: walletAddress, activity_type: activityType, score: score })
       });
       
       if (res.ok) {
@@ -832,18 +887,19 @@ function App() {
                 <ChevronRight size={20} />
               </button>
               <button 
-                onClick={() => {
-                  setIframeStatus('loading');
-                  // Trigger re-render of iframe by temporarily clearing and resetting status
-                  setTimeout(() => {
-                    if (activeTabObj.type === 'search') executeSearch(activeTabObj.query);
-                    else setIframeStatus('loaded');
-                  }, 100);
-                }}
-                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all"
-              >
-                <RefreshCw size={18} />
-              </button>
+                 onClick={() => {
+                   setIframeStatus('loading');
+                   setIframeKey(prev => prev + 1);
+                   setTimeout(() => {
+                     if (activeTabObj.type === 'search') executeSearch(activeTabObj.query);
+                     else setIframeStatus('loaded');
+                   }, 100);
+                 }}
+                 className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
+                 title="Force Reload Sync"
+               >
+                 <RefreshCw size={18} className={iframeStatus === 'loading' ? 'animate-spin text-indigo-400' : ''} />
+               </button>
             </div>
 
             <div className="relative w-full group">
@@ -974,14 +1030,14 @@ function App() {
                         <h2 className="text-3xl font-black tracking-tight mb-1">{tab.dapp.name}</h2>
                         <p className="text-base text-white/40 font-medium tracking-wide">{tab.dapp.url}</p>
                       </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
-                        <Shield size={24} className="text-white/40" />
-                      </button>
-                      <button className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center">
-                        <Globe size={24} className="text-white/40" />
-                      </button>
+                          <div className="flex gap-4">
+                       <button onClick={() => alert('Security Audit: Neural environment secure.')} className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center border-white/5">
+                         <Shield size={24} className="text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+                       </button>
+                       <button onClick={() => alert('Global Node: Synchronized to Hela Mainnet.')} className="w-14 h-14 glass hover:bg-white/10 rounded-2xl transition-all flex items-center justify-center border-white/5">
+                         <Globe size={24} className="text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.5)]" />
+                       </button>
+                     </div>
                     </div>
                   </div>
 
@@ -997,23 +1053,25 @@ function App() {
                       </div>
                     )}
 
-                    {iframeStatus === 'blocked' ? (
-                      <iframe 
-                        src={`${API_URL}/search/proxy?url=${encodeURIComponent(tab.dapp.url)}`} 
-                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                        className="w-full h-full border-none bg-white opacity-95" 
-                        title={`${tab.dapp.name} (Proxied)`} 
-                        onLoad={() => setIframeStatus('loaded')}
-                      />
-                    ) : (
-                      <iframe 
-                        src={tab.dapp.url} 
-                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
-                        className="w-full h-full border-none bg-white opacity-95" 
-                        title={tab.dapp.name} 
-                        onLoad={() => setIframeStatus('loaded')}
-                      />
-                    )}
+                    {tab.dapp.url.includes('helalabs.com') || tab.dapp.url.includes('hela.network') ? (
+                       <iframe 
+                         key={iframeKey}
+                         src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`} 
+                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                         className="w-full h-full border-none bg-white opacity-95" 
+                         title={`${tab.dapp.name} (Proxied)`} 
+                         onLoad={() => setIframeStatus('loaded')}
+                       />
+                     ) : (
+                       <iframe 
+                         key={iframeKey}
+                         src={`${tab.dapp.url}${tab.dapp.url.includes('?') ? '&' : '?'}v=${iframeKey}`}
+                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                         className="w-full h-full border-none bg-white opacity-95" 
+                         title={tab.dapp.name} 
+                         onLoad={() => setIframeStatus('loaded')}
+                       />
+                     )}
                   </div>
                 </div>
               ) : tab.type === 'search' ? (
@@ -2291,8 +2349,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              claimReward('wtf_quest_action');
-              alert(`Neural Sync Results: +Points added to your Identity for playing Snake.`);
+              claimReward('wtf_quest_action', score);
+              alert(`Neural Sync Results: +Points earned based on score of ${score}.`);
             }
           }} 
         />
@@ -2302,8 +2360,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              claimReward('wtf_quest_action');
-              alert(`Tetris Override: +Points added to your Identity for stacking blocks.`);
+              claimReward('wtf_quest_action', score);
+              alert(`Tetris Override: +Points earned based on score of ${score}.`);
             }
           }} 
         />
@@ -2313,8 +2371,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              claimReward('wtf_quest_action');
-              alert(`Sector Secured: +Points added to your Identity for defending the grid.`);
+              claimReward('wtf_quest_action', score);
+              alert(`Sector Secured: +Points earned based on performance (${score}).`);
             }
           }} 
         />
@@ -2324,8 +2382,8 @@ function App() {
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
             if(score > 0) {
-              claimReward('wtf_quest_action');
-              alert(`Match Completed! +Points added to your Identity for the battle.`);
+              claimReward('wtf_quest_action', score);
+              alert(`Match Completed: +Points earned for tactical execution.`);
             }
           }} 
         />
