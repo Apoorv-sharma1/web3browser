@@ -104,6 +104,13 @@ function App() {
   
   // Quest States
   const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
+  const [completedQuests, setCompletedQuests] = useState(() => {
+    const saved = localStorage.getItem('completed_quests');
+    if (!saved) return [];
+    const { date, quests } = JSON.parse(saved);
+    if (date !== new Date().toDateString()) return [];
+    return quests;
+  });
   const [articleTimer, setArticleTimer] = useState(0);
 
   // Profile & Accounts State
@@ -128,6 +135,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem('web3_accounts', JSON.stringify(accounts));
   }, [accounts]);
+
+  useEffect(() => {
+    localStorage.setItem('completed_quests', JSON.stringify({
+      date: new Date().toDateString(),
+      quests: completedQuests
+    }));
+  }, [completedQuests]);
 
   // Education Article Quest Timer
   useEffect(() => {
@@ -382,9 +396,14 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wallet_address: walletAddress, activity_type: activityType })
       });
+      
       if (res.ok) {
         const data = await res.json();
         setPoints(prev => prev + (data.points || 0));
+        // Track completion for one-time visual removal
+        if (activityType === 'wtf_quest' || activityType === 'wtf_quest_action') {
+           setCompletedQuests(prev => [...prev, activityType === 'wtf_quest_action' ? (activeQuests[0] || 'scholar') : 'daily']);
+        }
         return true;
       } else {
         const data = await res.json();
@@ -968,24 +987,24 @@ function App() {
                          </button>
                       </div>
 
-                      {/* Partner Cashback */}
-                      <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
-                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
-                           <Store size={100} />
-                         </div>
-                         <div className="flex justify-between items-start relative z-10">
-                           <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-400">Partner Cashback</h3>
-                           <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">+500 PTS</span>
-                         </div>
-                         <p className="text-sm text-white/40 font-bold relative z-10">Get points cashback on vouchers and simulated transactions with our verified partner network.</p>
-                         <button 
-                           onClick={() => setShowVoucherModal(true)}
-                           className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 hover:text-white transition-all border-white/10 hover:border-emerald-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
-                         >
-                           <ShoppingCart size={14} />
-                           Voucher Grid
-                         </button>
-                      </div>
+                       {/* Partner Cashback */}
+                       <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                            <Store size={100} />
+                          </div>
+                          <div className="flex justify-between items-start relative z-10">
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-400">Partner Vouchers</h3>
+                            <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">Store</span>
+                          </div>
+                          <p className="text-sm text-white/40 font-bold relative z-10">Redeem your hard-earned points for exclusive brand vouchers and digital gift cards.</p>
+                          <button 
+                            onClick={() => setShowVoucherModal(true)}
+                            className="w-full py-4 glass rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 hover:text-white transition-all border-white/10 hover:border-emerald-500/50 relative z-10 active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            <ShoppingCart size={14} />
+                            Voucher Grid
+                          </button>
+                       </div>
 
                       {/* Node Referrals */}
                       <div className="group glass-card rounded-[3rem] p-8 border-white/5 bg-white/5 hover:bg-white/10 transition-all space-y-6 relative overflow-hidden">
@@ -1549,60 +1568,68 @@ function App() {
             </div>
             
             <div className="space-y-4">
-              {/* Scholar Quest */}
-              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-purple-500/30 transition-all">
-                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400"><Layers size={20} /></div>
-                    <div>
-                      <div className="font-black uppercase tracking-tight text-sm text-white">The Scholar</div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Read an Education Article for 10s</div>
+               {/* Scholar Quest */}
+               {!completedQuests.includes('scholar') && (
+                 <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-purple-500/30 transition-all">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400"><Layers size={20} /></div>
+                       <div>
+                         <div className="font-black uppercase tracking-tight text-sm text-white">The Scholar</div>
+                         <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Read an Education Article for 10s</div>
+                       </div>
                     </div>
+                    {activeQuests.includes('scholar') ? (
+                       <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
+                    ) : (
+                       <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); setActiveTab('education'); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
+                    )}
                  </div>
-                 {activeQuests.includes('scholar') ? (
-                    <div className="text-xs font-black text-purple-400 bg-purple-500/10 px-4 py-2 rounded-xl animate-pulse flex items-center gap-2 tracking-widest"><Play size={10} /> {articleTimer}s / 10s</div>
-                 ) : (
-                    <button onClick={() => { setActiveQuests(prev => [...prev.filter(q => q !== 'scholar'), 'scholar']); setShowQuestModal(false); setActiveTab('education'); }} className="px-5 py-2.5 bg-white/5 hover:bg-purple-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Start +5</button>
-                 )}
-              </div>
-
-              {/* Explorer Quest */}
-              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
-                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400"><Globe size={20} /></div>
-                    <div>
-                      <div className="font-black uppercase tracking-tight text-sm text-white">The Explorer</div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
+               )}
+ 
+               {/* Explorer Quest */}
+               {!completedQuests.includes('explorer') && (
+                 <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400"><Globe size={20} /></div>
+                       <div>
+                         <div className="font-black uppercase tracking-tight text-sm text-white">The Explorer</div>
+                         <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Launch any Ecosystem dApp</div>
+                       </div>
                     </div>
+                    <button onClick={() => { setActiveQuests(['explorer']); claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('dapps'); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
                  </div>
-                 <button onClick={() => { claimReward('wtf_quest_action'); alert('Explorer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('dapps'); }} className="px-5 py-2.5 bg-white/5 hover:bg-indigo-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Quick +5</button>
-              </div>
-
-              {/* Gamer Quest */}
-              <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-red-500/30 transition-all">
-                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400"><Activity size={20} /></div>
-                    <div>
-                      <div className="font-black uppercase tracking-tight text-sm text-white">The Gamer</div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
+               )}
+ 
+               {/* Gamer Quest */}
+               {!completedQuests.includes('gamer') && (
+                 <div className="glass rounded-[2rem] p-5 border-white/5 flex items-center justify-between group hover:border-red-500/30 transition-all">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400"><Activity size={20} /></div>
+                       <div>
+                         <div className="font-black uppercase tracking-tight text-sm text-white">The Gamer</div>
+                         <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Play a WTF Zone Game</div>
+                       </div>
                     </div>
+                    <button onClick={() => { setActiveQuests(['gamer']); claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('wtf-zone'); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
                  </div>
-                 <button onClick={() => { claimReward('wtf_quest_action'); alert('Gamer Quest: +5 points!'); setShowQuestModal(false); setActiveTab('wtf-zone'); }} className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 text-xs font-black uppercase tracking-widest text-white rounded-xl transition-all border border-white/10">Play +5</button>
-              </div>
-            </div>
-            
-            <button onClick={async () => {
-                 if (!walletAddress) return alert('Connect wallet first');
-                 setIsQuesting(true);
-                 const success = await claimReward('wtf_quest');
-                 setIsQuesting(false);
-                 if (success) {
-                   setShowQuestModal(false);
-                   alert('Daily Main Quest Sync Complete: +50 Points!');
-                 }
-               }}
-               disabled={isQuesting} className="w-full mt-6 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 border border-white/10">
-                 {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Complete Daily Check-in (+50)'}
-            </button>
+               )}
+             </div>
+             
+             {!completedQuests.includes('daily') && (
+               <button onClick={async () => {
+                    if (!walletAddress) return alert('Connect wallet first');
+                    setIsQuesting(true);
+                    const success = await claimReward('wtf_quest');
+                    setIsQuesting(false);
+                    if (success) {
+                      setShowQuestModal(false);
+                      alert('Daily Main Quest Sync Complete: +50 Points!');
+                    }
+                  }}
+                  disabled={isQuesting} className="w-full mt-6 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 border border-white/10">
+                    {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Complete Daily Check-in (+50)'}
+               </button>
+             )}
           </div>
         </div>
       )}
@@ -1616,9 +1643,9 @@ function App() {
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-8">Broadcast your identity to expand the matrix and earn 50 PTS.</p>
             
             <div className="space-y-3 mb-6">
-               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser.com', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12A12 12 0 0 0 12.029 4.456zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
-               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser.com', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
-               <button onClick={() => { window.open('https://t.me/share/url?url=https://web3browser.com&text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
+               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12A12 12 0 0 0 12.029 4.456zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
+               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser-sooty.vercel.app%2F', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
+               <button onClick={() => { window.open('https://t.me/share/url?url=https://web3browser-sooty.vercel.app/&text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
             </div>
             
             <button onClick={() => setShowShareModal(false)} className="text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors tracking-widest">Close Matrix</button>
@@ -1633,42 +1660,20 @@ function App() {
             <div className="flex justify-between items-start mb-8 shrink-0">
               <div>
                 <h2 className="text-4xl font-black uppercase tracking-tighter italic mb-1 text-emerald-400">PARTNER <span className="text-white">VOUCHERS</span></h2>
-                <p className="text-white/40 text-sm font-bold">Redeem points for real-world assets or simulate purchases to earn cashback.</p>
+                <p className="text-white/40 text-sm font-bold">Redeem points for real-world assets and exclusive brand gift cards.</p>
               </div>
               <button onClick={() => setShowVoucherModal(false)} className="w-12 h-12 flex items-center justify-center glass rounded-full hover:bg-white/10 transition-all active:scale-95 text-white/50"><X size={24} /></button>
             </div>
             
             <div className="flex items-center justify-between mb-8 shrink-0 bg-black/20 p-6 rounded-3xl border border-white/5">
-               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-yellow-400/20 rounded-2xl flex items-center justify-center"><Zap size={24} className="text-yellow-400" /></div>
-                  <div>
-                    <div className="text-[10px] font-black uppercase text-white/40 tracking-widest">Available Points</div>
-                    <div className="text-2xl font-black text-white">{points.toLocaleString()} PTS</div>
-                  </div>
-               </div>
-               <button 
-                 onClick={async () => {
-                   if (!walletAddress) return alert('Connect wallet first');
-                   setIsCashbacking(true);
-                   try {
-                     await fetch(`${API_URL}/rewards/claim`, {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify({ wallet_address: walletAddress, activity_type: 'partner_cashback' })
-                     });
-                     setPoints(p => p + 500);
-                     alert('Cashback Simulated: +500 Points added!');
-                   } finally {
-                     setIsCashbacking(false);
-                   }
-                 }}
-                 disabled={isCashbacking}
-                 className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 border border-emerald-400/30"
-               >
-                 {isCashbacking ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <ShoppingCart size={14} />}
-                 {isCashbacking ? 'Processing...' : 'Simulate Purchase (+500)'}
-               </button>
-            </div>
+                <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 bg-yellow-400/20 rounded-2xl flex items-center justify-center"><Zap size={24} className="text-yellow-400" /></div>
+                   <div>
+                     <div className="text-[10px] font-black uppercase text-white/40 tracking-widest">Available Points</div>
+                     <div className="text-2xl font-black text-white">{points.toLocaleString()} PTS</div>
+                   </div>
+                </div>
+             </div>
 
             <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400 mb-4 px-2">Available Vouchers</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-4 pb-4 custom-scrollbar mb-8">
