@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { 
   Layout, 
@@ -40,6 +40,7 @@ import {
   ArrowUpRight,
   Copy
 } from 'lucide-react';
+import { SnakeGame, TetrisGame, SpaceBlasterGame, TicTacToe } from './components/Games';
 
 // Mock dApps Data
 const DAPPS = [
@@ -1307,40 +1308,52 @@ function App() {
                   <p className="text-white/30 text-xl font-medium tracking-tight uppercase tracking-widest">Connect your skills to the Hela economy.</p>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-red-500/20 transition-all cursor-pointer bg-gradient-to-br from-red-500/5 to-transparent">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-red-500 mb-8 group-hover:scale-110 transition-all">ðŸ</div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-red-500/20 transition-all cursor-pointer bg-gradient-to-br from-red-500/5 to-transparent flex flex-col items-center text-center">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-red-500 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸ  </div>
                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Snake Terminal</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Navigate the neural grid. Collect fragments to earn points. Highly addictive.</p>
+                     <p className="text-sm text-white/40 font-bold mb-8">Navigate the neural grid. Collect fragments to earn points. Keyboard optimized.</p>
                      <button 
                        onClick={() => setActiveGame('snake')}
-                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-red-500 group-hover:text-white transition-all"
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-red-500 group-hover:text-white transition-all"
                      >
                        PLAY & EARN
                      </button>
                   </div>
 
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-indigo-500/20 transition-all cursor-pointer bg-gradient-to-br from-indigo-500/5 to-transparent">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-indigo-400 mb-8 group-hover:scale-110 transition-all">ðŸ§©</div>
-                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Maze Solver</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Deconstruct complex encryption mazes. Speed is currency.</p>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-blue-500/20 transition-all cursor-pointer bg-gradient-to-br from-blue-500/5 to-transparent flex flex-col items-center text-center">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸ§©</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tetris Override</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">Classic block stacking. Clear rows, build multiplier, sync points.</p>
                      <button 
-                       onClick={() => setActiveGame('maze')}
-                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-indigo-500 group-hover:text-white transition-all"
+                       onClick={() => setActiveGame('tetris')}
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-blue-500 group-hover:text-white transition-all"
                      >
                        PLAY & EARN
                      </button>
                   </div>
 
-                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-emerald-500/20 transition-all cursor-pointer bg-gradient-to-br from-emerald-500/5 to-transparent">
-                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-emerald-400 mb-8 group-hover:scale-110 transition-all">ðŸŽ¯</div>
-                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Crypto Hit</h3>
-                     <p className="text-sm text-white/40 font-bold mb-8">Aura calibration test. Hit the targets to sync with the network pulse.</p>
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-cyan-500/20 transition-all cursor-pointer bg-gradient-to-br from-cyan-500/5 to-transparent flex flex-col items-center text-center">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-all text-3xl">ðŸš€</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Neon Blaster</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">Defend the grid from alien UFOs. Pixel block elements and endless waves.</p>
                      <button 
-                       onClick={() => alert('Crypto Hit Initializing... Syncing points...')}
-                       className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-emerald-500 group-hover:text-white transition-all"
+                       onClick={() => setActiveGame('space')}
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-cyan-500 group-hover:text-white transition-all"
                      >
                        PLAY & EARN
+                     </button>
+                  </div>
+
+                  <div className="group glass-card rounded-[3.5rem] p-10 border-white/5 hover:border-purple-500/20 transition-all cursor-pointer bg-gradient-to-br from-purple-500/5 to-transparent flex flex-col items-center text-center">
+                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 transition-all text-3xl">â Œ</div>
+                     <h3 className="text-2xl font-black uppercase tracking-tight mb-3">Tic Tac Toe</h3>
+                     <p className="text-sm text-white/40 font-bold mb-8">2-player classic showdown. Never settle for a draw. Settle on the chain.</p>
+                     <button 
+                       onClick={() => setActiveGame('tictactoe')}
+                       className="w-full mt-auto py-4 glass rounded-[1.5rem] font-black text-xs uppercase tracking-widest border-white/10 group-hover:bg-purple-500 group-hover:text-white transition-all"
+                     >
+                       PLAY & EARN (2P)
                      </button>
                   </div>
                </div>
@@ -2208,17 +2221,43 @@ function App() {
         <SnakeGame 
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
-            setPoints(prev => prev + score);
-            alert(`Neural Sync Results: +${score} Points added to your Identity.`);
+            if(score > 0) {
+              setPoints(prev => prev + score);
+              alert(`Neural Sync Results: +${score} Points added to your Identity.`);
+            }
           }} 
         />
       )}
-      {activeGame === 'maze' && (
-        <MazeGame 
+      {activeGame === 'tetris' && (
+        <TetrisGame 
           onExit={() => setActiveGame(null)} 
           onScore={(score) => {
-            setPoints(prev => prev + score);
-            alert(`Maze Deconstructed: +${score} Points added to your Identity.`);
+            if(score > 0) {
+              setPoints(prev => prev + score);
+              alert(`Tetris Override: +${score} Points added to your Identity.`);
+            }
+          }} 
+        />
+      )}
+      {activeGame === 'space' && (
+        <SpaceBlasterGame 
+          onExit={() => setActiveGame(null)} 
+          onScore={(score) => {
+            if(score > 0) {
+              setPoints(prev => prev + score);
+              alert(`Sector Secured: +${score} Points added to your Identity.`);
+            }
+          }} 
+        />
+      )}
+      {activeGame === 'tictactoe' && (
+        <TicTacToe 
+          onExit={() => setActiveGame(null)} 
+          onScore={(score) => {
+            if(score > 0) {
+              setPoints(prev => prev + Math.max(score, 100)); // Standardize reward
+              alert(`Match Completed! +${Math.max(score, 100)} Points added to your Identity.`);
+            }
           }} 
         />
       )}
@@ -2259,148 +2298,6 @@ function EduCard({ title, description, icon, tag, url, onLearnMore }) {
       </div>
     </div>
   );
-}
-
-
-
-function SnakeGame({ onExit, onScore }) {
-  const [snake, setSnake] = useState([[5, 5]]);
-  const [food, setFood] = useState([10, 10]);
-  const [direction, setDirection] = useState([0, 1]);
-  const [gameOver, setGameOver] = useState(false);
-  const [currentScore, setCurrentScore] = useState(0);
-
-  useEffect(() => {
-    if (gameOver) return;
-    const interval = setInterval(() => {
-      setSnake(prev => {
-        const newHead = [prev[0][0] + direction[0], prev[0][1] + direction[1]];
-        if (newHead[0] < 0 || newHead[0] >= 20 || newHead[1] < 0 || newHead[1] >= 20 || prev.some(s => s[0] === newHead[0] && s[1] === newHead[1])) {
-          setGameOver(true);
-          return prev;
-        }
-        const newSnake = [newHead, ...prev];
-        if (newHead[0] === food[0] && newHead[1] === food[1]) {
-          setCurrentScore(s => s + 10);
-          setFood([Math.floor(Math.random() * 20), Math.floor(Math.random() * 20)]);
-        } else {
-          newSnake.pop();
-        }
-        return newSnake;
-      });
-    }, 150);
-    return () => clearInterval(interval);
-  }, [direction, food, gameOver]);
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-500 px-6">
-      <div className="glass-card max-w-2xl w-full p-12 rounded-[4rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h2 className="text-4xl font-black uppercase tracking-tighter italic">SNAKE <span className="text-indigo-400">TERMINAL</span></h2>
-            <p className="text-white/30 text-xs font-bold uppercase tracking-widest mt-2">Neural Coordination Test</p>
-          </div>
-          <div className="text-right">
-             <p className="text-[10px] font-black uppercase text-white/20 tracking-widest">Local Score</p>
-             <p className="text-3xl font-black text-indigo-400 tracking-tighter">{currentScore}</p>
-          </div>
-        </div>
-
-        <div className="aspect-square w-full max-w-[400px] mx-auto bg-black/40 rounded-[2rem] border-2 border-white/5 relative mb-12 grid grid-cols-20 grid-rows-20 p-2">
-           {gameOver ? (
-             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10 rounded-[1.8rem]">
-                <h3 className="text-4xl font-black uppercase italic mb-4">CRITICAL FAILURE</h3>
-                <p className="text-white/40 font-bold mb-8 italic text-center">Neural sync lost at {currentScore} cycles.</p>
-                <div className="flex gap-4">
-                   <button onClick={() => { setSnake([[5, 5]]); setGameOver(false); setCurrentScore(0); }} className="px-8 py-4 bg-indigo-600 rounded-2xl font-black uppercase text-sm">Restart Sync</button>
-                   <button onClick={() => { onScore(currentScore); onExit(); }} className="px-8 py-4 glass rounded-2xl font-black uppercase text-sm border-white/10">Exit Matrix</button>
-                </div>
-             </div>
-           ) : (
-             <>
-               {snake.map((s, i) => (
-                 <div key={i} style={{ gridColumnStart: s[1] + 1, gridRowStart: s[0] + 1 }} className={`w-full h-full rounded-sm ${i === 0 ? 'bg-indigo-400 shadow-glow z-10' : 'bg-indigo-400/30'}`}></div>
-               ))}
-               <div style={{ gridColumnStart: food[1] + 1, gridRowStart: food[0] + 1 }} className="w-full h-full bg-emerald-400 rounded-full shadow-glow-emerald animate-pulse"></div>
-             </>
-           )}
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 max-w-[200px] mx-auto">
-           <div />
-           <button onClick={() => setDirection([-1, 0])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="-rotate-90 translate-y-[-2px] text-white/40" /></button>
-           <div />
-           <button onClick={() => setDirection([0, -1])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="rotate-180 translate-x-[-2px] text-white/40" /></button>
-           <button onClick={() => setDirection([1, 0])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="rotate-90 translate-y-[2px] text-white/40" /></button>
-           <button onClick={() => setDirection([0, 1])} className="w-12 h-12 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border-white/10"><ChevronRight size={20} className="translate-x-[2px] text-white/40" /></button>
-        </div>
-
-        <p className="mt-12 text-center text-[10px] text-white/10 font-black uppercase tracking-[0.4em]">Use Directional Pad or Arrow Keys to navigate</p>
-      </div>
-    </div>
-  )
-}
-
-function MazeGame({ onExit, onScore }) {
-  const [level, setLevel] = useState(1);
-  const [solved, setSolved] = useState(false);
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in fade-in duration-500 px-6">
-      <div className="glass-card max-w-2xl w-full p-12 rounded-[4rem] border-white/10 relative overflow-hidden bg-gradient-to-br from-purple-900/10 to-transparent">
-        <div className="text-center space-y-8">
-          <div className="w-20 h-20 bg-indigo-600/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-             <Layers size={40} className="text-indigo-400 animate-pulse" />
-          </div>
-          <h2 className="text-4xl font-black uppercase italic tracking-tighter">MAZE <span className="text-purple-400">SOLVER</span></h2>
-          <p className="text-white/40 font-medium">Algorithmic Pathfinding Simulation</p>
-          
-          <div className="py-12 glass rounded-[2rem] border-white/5 bg-black/40 relative group overflow-hidden">
-             <div className="absolute inset-0 flex items-center justify-center">
-                {!solved ? (
-                  <div className="space-y-6">
-                    <p className="text-indigo-400 font-black animate-pulse">SOLVING ENCRYPTION LAYER {level}...</p>
-                    <div className="w-48 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
-                       <div className="h-full bg-indigo-500 animate-[loading_3s_linear_infinite]"></div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <CheckCircle size={64} className="text-emerald-400 mx-auto" />
-                    <p className="text-2xl font-black uppercase text-emerald-400 tracking-tighter">LAYER DECONSTRUCTED</p>
-                  </div>
-                )}
-             </div>
-             <style>{`
-               @keyframes loading {
-                 0% { width: 0%; }
-                 100% { width: 100%; }
-               }
-             `}</style>
-          </div>
-
-          {!solved ? (
-            <button 
-              onClick={() => {
-                setTimeout(() => {
-                  setSolved(true);
-                  onScore(150 * level);
-                }, 3000);
-              }}
-              className="w-full bg-white text-indigo-900 py-5 rounded-2xl font-black text-lg hover:shadow-2xl transition-all"
-            >
-              EXECUTE SOLVER
-            </button>
-          ) : (
-            <div className="flex gap-4">
-              <button onClick={() => { setLevel(l => l + 1); setSolved(false); }} className="flex-1 bg-indigo-600 py-5 rounded-2xl font-black text-lg">Next Level</button>
-              <button onClick={onExit} className="flex-1 glass py-5 rounded-2xl font-black text-lg border-white/10">Exit Matrix</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // Final Synchronization Signature: 0x817a68d-matrix-core-v5.0-playwall-complete
