@@ -120,6 +120,7 @@ function App() {
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
+  const [rewardHistory, setRewardHistory] = useState([]);
 
   // Sync balance and network periodically
   useEffect(() => {
@@ -549,6 +550,7 @@ function App() {
             const totalHelaReward = data.reduce((acc, curr) => acc + (curr.token_amount || 0), 0);
             setPoints(totalPoints);
             setHelaBalance(totalHelaReward.toFixed(2));
+            setRewardHistory(data);
           });
 
       } catch (err) {
@@ -1301,6 +1303,61 @@ function App() {
                             </button>
                          </div>
                       </div>
+                   </div>
+                </div>
+
+                {/* Reward History Section */}
+                <div className="glass-card rounded-[3rem] p-8 border-white/5 bg-white/3 relative overflow-hidden">
+                   <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 glass rounded-xl flex items-center justify-center text-indigo-400">
+                            <Activity size={20} />
+                         </div>
+                         <div>
+                            <h3 className="text-xl font-black uppercase tracking-tighter">Activity Stream</h3>
+                            <p className="text-[10px] text-white/30 font-black tracking-widest uppercase">Last 24 Hours of Neural Earnings</p>
+                         </div>
+                      </div>
+                      <div className="text-right">
+                         <span className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest border border-indigo-500/20 px-3 py-1 rounded-full bg-indigo-500/5">Encrypted Log</span>
+                      </div>
+                   </div>
+
+                   <div className="space-y-3">
+                      {rewardHistory.filter(r => r.points > 0).length === 0 ? (
+                         <div className="py-10 text-center glass rounded-3xl border-dashed border-white/5">
+                            <p className="text-sm font-bold text-white/20 uppercase tracking-widest">No recent neural fragments detected.</p>
+                         </div>
+                      ) : (
+                         rewardHistory.filter(r => r.points > 0).slice(0, 10).map((reward, i) => {
+                            const typeMap = {
+                               'dapp_interaction': { label: 'Explorer Access', icon: <Globe size={14}/>, color: 'text-indigo-400' },
+                               'login': { label: 'Chain Login', icon: <Lock size={14}/>, color: 'text-emerald-400' },
+                               'wtf_quest': { label: 'Main Mission', icon: <Trophy size={14}/>, color: 'text-purple-400' },
+                               'wtf_quest_action': { label: 'WTF Zone Play', icon: <Gamepad2 size={14}/>, color: 'text-red-400' },
+                               'node_referral': { label: 'Node Sync', icon: <Users size={14}/>, color: 'text-blue-400' },
+                               'partner_cashback': { label: 'Voucher Grid', icon: <ShoppingCart size={14}/>, color: 'text-emerald-400' }
+                            };
+                            const info = typeMap[reward.activity_type] || { label: 'System Reward', icon: <Zap size={14}/>, color: 'text-yellow-400' };
+                            
+                            return (
+                               <div key={reward.id || i} className="flex items-center justify-between p-4 glass rounded-2xl border-white/5 hover:bg-white/5 transition-all group animate-in slide-in-from-left duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                                  <div className="flex items-center gap-4">
+                                     <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${info.color} group-hover:scale-110 transition-transform shadow-inner`}>
+                                        {info.icon}
+                                     </div>
+                                     <div>
+                                        <div className="text-sm font-black uppercase tracking-tight text-white/80">{info.label}</div>
+                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{new Date(reward.created_at).toLocaleTimeString()} Â· {new Date(reward.created_at).toLocaleDateString()}</div>
+                                     </div>
+                                  </div>
+                                  <div className={`text-sm font-black ${info.color}`}>
+                                     +{reward.points} PTS
+                                  </div>
+                               </div>
+                            );
+                         })
+                      )}
                    </div>
                 </div>
              </section>
