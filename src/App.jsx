@@ -127,11 +127,12 @@ function App() {
     }
   }, []);
 
-  // Sync Rewards when wallet changes
+  // Sync Rewards when wallet or profile changes
   useEffect(() => {
     if (walletAddress) {
+       const profile_id = activeProfileId || 1;
        // Fetch Total Balance
-       fetch(`${API_URL}/rewards/balance/${walletAddress}`)
+       fetch(`${API_URL}/rewards/balance/${walletAddress}?profile_id=${profile_id}`)
           .then(res => res.json())
           .then(data => {
             if (data.total_points !== undefined) {
@@ -142,7 +143,7 @@ function App() {
           .catch(err => console.error('Fetch balance failed', err));
 
        // Fetch 24h History for Activity Stream
-       fetch(`${API_URL}/rewards/${walletAddress}`)
+       fetch(`${API_URL}/rewards/${walletAddress}?profile_id=${profile_id}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) {
@@ -151,7 +152,7 @@ function App() {
           })
           .catch(err => console.error('Fetch history failed', err));
     }
-  }, [walletAddress]);
+  }, [walletAddress, activeProfileId]);
 
   // Passive Points Timer
   useEffect(() => {
@@ -330,6 +331,16 @@ function App() {
     return saved ? JSON.parse(saved) : [{ id: 1, name: 'Primary Core', address: '', active: true }];
   });
 
+  const [activeProfileId, setActiveProfileId] = useState(() => {
+    const saved = localStorage.getItem('active_profile_id');
+    return saved ? parseInt(saved) : 1;
+  });
+
+  const [activeProfileName, setActiveProfileName] = useState(() => {
+    const active = accounts.find(a => a.id === activeProfileId);
+    return active ? active.name : 'Primary Core';
+  });
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
@@ -340,7 +351,13 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('web3_accounts', JSON.stringify(accounts));
-  }, [accounts]);
+    const active = accounts.find(a => a.id === activeProfileId);
+    if (active) setActiveProfileName(active.name);
+  }, [accounts, activeProfileId]);
+
+  useEffect(() => {
+    localStorage.setItem('active_profile_id', activeProfileId.toString());
+  }, [activeProfileId]);
 
   useEffect(() => {
     localStorage.setItem('completed_quests', JSON.stringify({
@@ -622,7 +639,11 @@ function App() {
         fetch(`${API_URL}/users/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ wallet_address: address })
+          body: JSON.stringify({ 
+            wallet_address: address,
+            profile_id: activeProfileId,
+            profile_name: activeProfileName
+          })
         });
         
         localStorage.setItem('wallet_address', address);
@@ -658,7 +679,11 @@ function App() {
       const res = await fetch(`${API_URL}/rewards/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet_address: walletAddress, points: redeemAmount })
+        body: JSON.stringify({ 
+          wallet_address: walletAddress, 
+          points: redeemAmount,
+          profile_id: activeProfileId
+        })
       });
       
       if (res.ok) {
@@ -684,14 +709,14 @@ function App() {
   const refreshBalance = async () => {
     if (!walletAddress) return;
     try {
-      const res = await fetch(`${API_URL}/rewards/balance/${walletAddress}`);
+      const res = await fetch(`${API_URL}/rewards/balance/${walletAddress}?profile_id=${activeProfileId}`);
       const data = await res.json();
       if (data.total_points !== undefined) {
         setPoints(data.total_points);
         setHelaBalance(data.total_tokens.toFixed(2));
       }
       
-      const resHist = await fetch(`${API_URL}/rewards/${walletAddress}`);
+      const resHist = await fetch(`${API_URL}/rewards/${walletAddress}?profile_id=${activeProfileId}`);
       const dataHist = await resHist.json();
       if (Array.isArray(dataHist)) setRewardHistory(dataHist);
     } catch (e) {
@@ -707,7 +732,12 @@ function App() {
       const res = await fetch(`${API_URL}/rewards/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet_address: walletAddress, activity_type: activityType, score: score })
+        body: JSON.stringify({ 
+          wallet_address: walletAddress, 
+          activity_type: activityType, 
+          score: score,
+          profile_id: activeProfileId
+        })
       });
       
       if (res.ok) {
@@ -2022,7 +2052,7 @@ function App() {
 
             {/* Tabs */}
             <div className="flex gap-1 bg-white/5 p-1 rounded-2xl mb-6">
-              {['assets', 'send', 'receive'].map(tab => (
+              {['assets', 'profiles', 'send', 'receive'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveWalletTab(tab)}
@@ -2078,6 +2108,81 @@ function App() {
                   <p className="text-[10px] text-white/20 uppercase tracking-widest">Connected Address</p>
                   <p className="font-mono text-xs text-white/50 truncate">{walletAddress}</p>
                   <p className="text-[9px] text-white/10 uppercase">Last sync: {new Date(lastRefresh).toLocaleTimeString()}</p>
+                </div>
+              </div>
+            )}
+
+            {/* PROFILES TAB */}
+            {activeWalletTab === 'profiles' && (
+              <div className="flex flex-col gap-4 py-2">
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {accounts.map((acc) => (
+                    <div 
+                      key={acc.id}
+                      onClick={() => {
+                        setActiveProfileId(acc.id);
+                        setActiveProfileName(acc.name);
+                        // Force refresh balance for the new active profile
+                        refreshBalance();
+                      }}
+                      className={`group p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        activeProfileId === acc.id 
+                          ? 'bg-indigo-600/10 border-indigo-500/50 text-white' 
+                          : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeProfileId === acc.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/5 text-white/20'}`}>
+                          <User size={20} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-black uppercase tracking-tight">{acc.name}</div>
+                          <div className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Profile ID: {acc.id}</div>
+                        </div>
+                      </div>
+                      {activeProfileId === acc.id && (
+                        <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)]" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t border-white/5 mt-2">
+                  <button 
+                    onClick={async () => {
+                      const name = prompt('Enter Profile Name:', `Profile ${accounts.length + 1}`);
+                      if (name && name.trim()) {
+                        const newId = Math.max(0, ...accounts.map(a => a.id)) + 1;
+                        const newAcc = { id: newId, name: name.trim(), address: walletAddress, active: false };
+                        setAccounts(prev => [...prev, newAcc]);
+                        
+                        // Register new profile with backend
+                        if (walletAddress) {
+                          try {
+                            await fetch(`${API_URL}/users/register`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ 
+                                wallet_address: walletAddress,
+                                profile_id: newId,
+                                profile_name: name.trim()
+                              })
+                            });
+                          } catch (e) {
+                            console.error('Failed to register new profile', e);
+                          }
+                        }
+                        
+                        setActiveProfileId(newId);
+                        setActiveProfileName(name.trim());
+                        alert(`New Profile "${name.trim()}" activated.`);
+                      }
+                    }}
+                    className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all active:scale-95 text-indigo-400"
+                  >
+                    <Plus size={18} />
+                    Create New Profile
+                  </button>
                 </div>
               </div>
             )}
