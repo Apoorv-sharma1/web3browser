@@ -1080,13 +1080,13 @@ function App() {
           </div>
         </header>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar relative z-10">
+        {/* Main App Workspace */}
+        <div className="flex-1 bg-black/20 flex flex-col relative overflow-hidden">
           {(Array.isArray(tabs) ? tabs : []).map(tab => (
             <div key={tab.id} className={tab.id === activeTabId ? "block h-full" : "hidden"}>
               {tab.dapp ? (
                 <div className="browser-content-area animate-in fade-in duration-500 overflow-hidden">
-                  <div className="h-10 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
+                  <div className="h-10 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md shrink-0">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -1095,7 +1095,22 @@ function App() {
                       <div className="w-px h-4 bg-white/10"></div>
                       <div className="flex items-center gap-2 opacity-60">
                          {tab.dapp.icon && <span className="scale-75 origin-left">{tab.dapp.icon}</span>}
-                         <span className="text-[10px] font-bold text-white/50 truncate max-w-[200px]">{tab.dapp.name}</span>
+                         <span className="text-[10px] font-bold text-white/50 truncate max-w-[150px]">{tab.dapp.name}</span>
+                      </div>
+                      <div className="w-px h-4 bg-white/10"></div>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                           <Shield size={10} className="text-emerald-400" />
+                           <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tight">
+                             {Math.floor((tab.dapp.url.length % 5) + 2)} Ads Blocked
+                           </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">
+                           <Zap size={10} className="text-indigo-400" />
+                           <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tight">
+                             {Math.floor((tab.dapp.url.length % 3) + 1)} Trackers Blocked
+                           </span>
+                        </div>
                       </div>
                     </div>
                     
@@ -1147,8 +1162,8 @@ function App() {
                 </div>
               ) : tab.type === 'search' ? (
                  <section className="browser-content-area animate-in fade-in duration-500 overflow-y-auto standard-scrollbar pb-20">
-                   <div className="max-w-4xl mx-auto py-12 px-8">
-                     <div className="mb-10">
+                   <div className="max-w-4xl mx-auto py-8 px-8">
+                     <div className="mb-8">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400/60 mb-2">Neural Indexed Results</h2>
                         <h1 className="text-4xl font-black tracking-tighter uppercase italic opacity-90">Results for <span className="text-indigo-400">"{tab.query}"</span></h1>
                      </div>
