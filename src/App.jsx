@@ -1101,188 +1101,202 @@ function App() {
               </div>
             </section>
           ) : activeTab === 'settings' ? (
-            <section className="animate-in fade-in slide-in-from-bottom-10 duration-700">
-               <div className="flex items-center justify-between mb-16">
-                  <div>
-                    <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">ACCOUNT MATRIX</h1>
-                    <p className="text-white/40 text-xl font-medium tracking-tight mt-2">Managing your neural presence across the net.</p>
-                  </div>
-                  <User size={48} className="text-white/10" />
-               </div>
+            <section className="animate-in fade-in duration-700 max-w-6xl mx-auto pb-20">
 
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                  <div className="md:col-span-1 space-y-10">
-                     <div className="glass-card rounded-[3rem] p-8 text-center relative overflow-hidden group">
-                        <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl relative z-10">
-                           {userProfile.avatar ? (
-                             <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover rounded-[2.5rem]" />
-                           ) : (
-                             <User size={40} className="text-white" />
-                           )}
+              {/* Hero Banner */}
+              <div className="relative rounded-[3rem] overflow-hidden mb-8 h-52" style={{background: 'linear-gradient(135deg, #1a1050 0%, #2d1b69 40%, #0f172a 100%)'}}>
+                <div className="absolute inset-0 opacity-30" style={{backgroundImage: 'radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 50%), radial-gradient(circle at 80% 20%, #a855f7 0%, transparent 50%), radial-gradient(circle at 60% 80%, #06b6d4 0%, transparent 40%)'}} />
+                <div className="absolute inset-0" style={{backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px)'}} />
+                <div className="absolute bottom-6 left-8">
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-300/60 mb-1">Web3 Identity Matrix</div>
+                  <h1 className="text-4xl font-black tracking-tighter text-white uppercase">{userProfile.name}</h1>
+                  <p className="text-sm text-indigo-300/70 font-bold tracking-widest uppercase mt-1">{userProfile.bio}</p>
+                </div>
+                {/* Avatar floating on banner */}
+                <div className="absolute bottom-[-30px] right-10">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-[2rem] blur-xl bg-indigo-500/50 scale-110" />
+                    <div className="relative w-24 h-24 rounded-[2rem] border-4 border-[#0f172a] shadow-2xl overflow-hidden" style={{background: 'linear-gradient(135deg, #6366f1, #a855f7)'}}>
+                      {userProfile.avatar ? (
+                        <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User size={38} className="text-white" />
                         </div>
-                        <h3 className="text-2xl font-black tracking-tight mb-2 uppercase">{userProfile.name}</h3>
-                        <p className="text-xs text-indigo-400 font-bold tracking-[0.2em] uppercase">{userProfile.bio}</p>
-                        <button 
-                          onClick={() => setIsEditingProfile(!isEditingProfile)}
-                          className="mt-8 w-full glass py-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all border-white/5"
-                        >
-                           {isEditingProfile ? 'CANCEL EDIT' : 'EDIT PROFILE'}
-                        </button>
-                     </div>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-[#0f172a] shadow-lg" />
+                  </div>
+                </div>
+              </div>
 
-                     <div className="glass-card rounded-[3rem] p-8 border-red-500/5 hover:border-red-500/20 transition-all">
-                        <h4 className="text-xs font-black uppercase tracking-[0.3em] text-red-400 mb-6 flex items-center gap-2">
-                          <Shield size={14} /> Danger Zone
-                        </h4>
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mt-10">
+                {[
+                  { label: 'Points', value: points.toLocaleString(), icon: <Trophy size={16} className="text-amber-400" />, color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20' },
+                  { label: 'HELA Balance', value: helaBalance, icon: <Zap size={16} className="text-indigo-400" />, color: 'from-indigo-500/20 to-indigo-600/5', border: 'border-indigo-500/20' },
+                  { label: 'Accounts', value: accounts.length, icon: <UserPlus size={16} className="text-purple-400" />, color: 'from-purple-500/20 to-purple-600/5', border: 'border-purple-500/20' },
+                  { label: 'Status', value: 'ELITE', icon: <ShieldCheck size={16} className="text-emerald-400" />, color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20' },
+                ].map((stat, i) => (
+                  <div key={i} className={`glass-card rounded-[2rem] p-6 bg-gradient-to-br ${stat.color} border ${stat.border} hover:scale-[1.02] transition-all duration-300`}>
+                    <div className="flex items-center gap-2 mb-3">{stat.icon}<span className="text-[10px] font-black uppercase tracking-widest text-white/40">{stat.label}</span></div>
+                    <div className="text-2xl font-black tracking-tight text-white">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
 
-                        {/* Logout Button */}
-                        <button 
-                          onClick={() => {
-                            if(window.ethereum) window.ethereum.removeAllListeners();
-                            localStorage.removeItem('web3_walletAddress');
-                            setWalletAddress('');
-                            setIsWalletGateOpen(true);
-                            setActiveTab('explore');
-                            setActiveDApp(null);
-                          }}
-                          className="w-full py-4 mb-3 text-xs font-black uppercase tracking-[0.3em] text-white/50 hover:text-amber-400 hover:bg-amber-400/10 rounded-2xl border border-white/5 hover:border-amber-400/20 transition-all text-center flex items-center justify-center gap-2"
-                        >
-                          <LogOut size={14} /> DISCONNECT SESSION
-                        </button>
+              {/* Achievement Badges */}
+              <div className="glass-card rounded-[2.5rem] p-8 mb-8 border-white/5">
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 mb-5 flex items-center gap-2"><Trophy size={12} /> Achievements</h3>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { label: 'Web3 Pioneer', icon: '🚀', color: 'from-indigo-500/30 to-purple-500/20', border: 'border-indigo-500/30' },
+                    { label: 'DeFi Explorer', icon: '🌊', color: 'from-emerald-500/20 to-teal-500/10', border: 'border-emerald-500/25' },
+                    { label: 'Hela Holder', icon: '⚡', color: 'from-amber-500/20 to-orange-500/10', border: 'border-amber-500/25' },
+                    { label: 'NFT Collector', icon: '🎨', color: 'from-pink-500/20 to-rose-500/10', border: 'border-pink-500/25' },
+                    { label: 'Block Master', icon: '🔷', color: 'from-blue-500/20 to-cyan-500/10', border: 'border-blue-500/25' },
+                    { label: 'Game Winner', icon: '🎮', color: 'from-violet-500/20 to-fuchsia-500/10', border: 'border-violet-500/25' },
+                  ].map((badge, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${badge.color} border ${badge.border} hover:scale-105 transition-transform cursor-default`}>
+                      <span className="text-sm">{badge.icon}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/70">{badge.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                        {/* Delete Account Button */}
-                        <button 
-                          onClick={() => setShowDeleteConfirm(true)}
-                          className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-2xl border border-white/5 hover:border-red-400/20 transition-all text-center"
-                        >
-                           WIPE MATRIX CACHE
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                {/* Left: Edit Profile + Danger Zone */}
+                <div className="space-y-6">
+                  {/* Edit Profile Card */}
+                  <div className="glass-card rounded-[2.5rem] p-7 border-white/5">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-5 flex items-center gap-2"><Edit3 size={12} /> Identity</h3>
+                    {isEditingProfile ? (
+                      <div className="space-y-4 animate-in fade-in duration-200">
+                        <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 block">Name</label>
+                          <input type="text" value={userProfile.name} onChange={(e) => setUserProfile({...userProfile, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-bold text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 block">Bio</label>
+                          <input type="text" value={userProfile.bio} onChange={(e) => setUserProfile({...userProfile, bio: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-bold text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 block">Avatar URL</label>
+                          <input type="text" value={userProfile.avatar} onChange={(e) => setUserProfile({...userProfile, avatar: e.target.value})} placeholder="https://..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+                        </div>
+                        <div className="flex gap-3 pt-1">
+                          <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-3 glass rounded-xl text-xs font-black uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all">Cancel</button>
+                          <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-lg shadow-indigo-600/30">Save</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex flex-col gap-2">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-white/25">Name</div>
+                          <div className="text-sm font-black uppercase tracking-tight text-white">{userProfile.name}</div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-white/25">Bio</div>
+                          <div className="text-sm font-bold text-indigo-400">{userProfile.bio}</div>
+                        </div>
+                        <button onClick={() => setIsEditingProfile(true)} className="w-full py-3 glass rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5 flex items-center justify-center gap-2">
+                          <Edit3 size={12} /> Edit Profile
                         </button>
-                     </div>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="md:col-span-2 space-y-10">
-                     {isEditingProfile ? (
-                       <div className="glass-card rounded-[3.5rem] p-10 border-indigo-500/20 space-y-8 animate-in zoom-in duration-300">
-                          <h3 className="text-2xl font-black uppercase tracking-tight mb-4 text-indigo-400">Update Identity</h3>
-                          <div className="space-y-6">
-                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-1">Network Alias</label>
-                                <input 
-                                  type="text" 
-                                  value={userProfile.name}
-                                  onChange={(e) => setUserProfile({...userProfile, name: e.target.value})}
-                                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 font-black uppercase text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                                />
-                             </div>
-                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-1">Neural Bio</label>
-                                <input 
-                                  type="text" 
-                                  value={userProfile.bio}
-                                  onChange={(e) => setUserProfile({...userProfile, bio: e.target.value})}
-                                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 font-black uppercase text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                                />
-                             </div>
-                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-1">Avatar Sequence URL</label>
-                                <input 
-                                  type="text" 
-                                  value={userProfile.avatar}
-                                  onChange={(e) => setUserProfile({...userProfile, avatar: e.target.value})}
-                                  placeholder="https://..."
-                                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                                />
-                             </div>
-                             <button 
-                               onClick={() => setIsEditingProfile(false)}
-                               className="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-lg transition-all hover:bg-indigo-500 active:scale-95 shadow-xl shadow-indigo-600/30"
-                             >
-                                SAVE CHANGES
-                             </button>
-                          </div>
-                       </div>
-                     ) : (
-                       <div className="space-y-10">
-                          <div className="glass-card rounded-[3.5rem] p-10 border-white/5">
-                             <div className="flex items-center justify-between mb-10">
-                                <h3 className="text-2xl font-black uppercase tracking-tight">Active Accounts</h3>
-                                <button 
-                                   onClick={async () => {
-                                     try {
-                                       const provider = new ethers.BrowserProvider(window.ethereum);
-                                       const signer = await provider.getSigner();
-                                       const addr = await signer.getAddress();
-                                       if(accounts.find(a => a.address === addr)) return alert('Identity already synchronized in Matrix.');
-                                       setAccounts([...accounts, { id: Date.now(), name: 'Sub-Core ' + (accounts.length + 1), address: addr, active: false }]);
-                                     } catch(e) {
-                                       alert('MetaMask authentication failed.');
-                                     }
-                                   }}
-                                  className="flex items-center gap-2 text-indigo-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors"
-                                >
-                                    <UserPlus size={16} /> SYNC NEW IDENTITY
-                                </button>
-                             </div>
-                             <div className="space-y-4">
-                                 {accounts.map((acc) => (
-                                  <div key={acc.id} className={`flex items-center justify-between p-6 rounded-[2rem] border transition-all ${acc.active ? 'bg-indigo-600/10 border-indigo-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
-                                     <div className="flex items-center gap-4">
-                                        <div className={`w-3 h-3 rounded-full ${acc.active ? 'bg-indigo-400 shadow-glow' : 'bg-white/10'}`}></div>
-                                        <div>
-                                           <div className="font-black uppercase tracking-tight text-white mb-1">{acc.name}</div>
-                                           <div className="text-[10px] font-black uppercase text-white/20 tracking-widest">UID: {acc.id.toString().slice(-4)}</div>
-                                        </div>
-                                     </div>
-                                     <div className="flex items-center gap-3">
-                                        {!acc.active && (
-                                           <button 
-                                             onClick={() => {
-                                               setAccounts(accounts.map(a => ({...a, active: a.id === acc.id})));
-                                               setWalletAddress(acc.address);
-                                               setIsWalletGateOpen(false);
-                                               alert(`Switched to Core: ${acc.name}`);
-                                             }}
-                                             className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10"
-                                           >
-                                             Switch
-                                           </button>
-                                        )}
-                                        <button 
-                                          onClick={() => {
-                                            if(accounts.length > 1) {
-                                              setAccounts(accounts.filter(a => a.id !== acc.id));
-                                            } else {
-                                              alert('Deployment must have at least one active nucleus.');
-                                            }
-                                          }}
-                                          className="w-10 h-10 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
-                                        >
-                                           <Trash2 size={18} />
-                                        </button>
-                                     </div>
-                                  </div>
-                                ))}
-                             </div>
-                          </div>
-
-                          <div className="glass-card rounded-[3rem] p-10 bg-gradient-to-br from-indigo-600/20 to-transparent border-indigo-500/10">
-                             <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center text-indigo-400">
-                                   <Layers size={32} />
-                                </div>
-                                <div className="flex-1">
-                                   <h3 className="text-xl font-black uppercase tracking-tight mb-1">Matrix Status: Elite</h3>
-                                   <p className="text-xs text-white/40 font-bold uppercase tracking-widest">All neural connections established.</p>
-                                </div>
-                                <div className="text-right">
-                                   <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20">LIVE UNIT</span>
-                                </div>
-                             </div>
-                          </div>
-                       </div>
-                     )}
+                  {/* Danger Zone */}
+                  <div className="glass-card rounded-[2.5rem] p-7 border-red-500/5 hover:border-red-500/15 transition-all">
+                    <h4 className="text-xs font-black uppercase tracking-[0.3em] text-red-400 mb-5 flex items-center gap-2"><Shield size={12} /> Danger Zone</h4>
+                    <button onClick={() => { if(window.ethereum) window.ethereum.removeAllListeners(); localStorage.removeItem('web3_walletAddress'); setWalletAddress(''); setIsWalletGateOpen(true); setActiveTab('explore'); setActiveDApp(null); }}
+                      className="w-full py-3 mb-3 text-xs font-black uppercase tracking-[0.2em] text-white/40 hover:text-amber-400 hover:bg-amber-400/10 rounded-xl border border-white/5 hover:border-amber-400/20 transition-all flex items-center justify-center gap-2">
+                      <LogOut size={12} /> Disconnect
+                    </button>
+                    <button onClick={() => setShowDeleteConfirm(true)}
+                      className="w-full py-3 text-xs font-black uppercase tracking-[0.2em] text-white/25 hover:text-red-400 hover:bg-red-400/10 rounded-xl border border-white/5 hover:border-red-400/15 transition-all">
+                      Wipe Cache
+                    </button>
                   </div>
-               </div>
+                </div>
+
+                {/* Right: Active Accounts + Wallet Card */}
+                <div className="md:col-span-2 space-y-6">
+                  <div className="glass-card rounded-[2.5rem] p-8 border-white/5">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-sm font-black uppercase tracking-tight">Active Accounts</h3>
+                      <button onClick={async () => { try { const provider = new ethers.BrowserProvider(window.ethereum); const signer = await provider.getSigner(); const addr = await signer.getAddress(); if(accounts.find(a => a.address === addr)) return alert('Identity already synchronized.'); setAccounts([...accounts, { id: Date.now(), name: 'Sub-Core ' + (accounts.length + 1), address: addr, active: false }]); } catch(e) { alert('MetaMask auth failed.'); } }}
+                        className="flex items-center gap-2 text-indigo-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">
+                        <UserPlus size={14} /> Sync New
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {accounts.map((acc) => (
+                        <div key={acc.id} className={`flex items-center justify-between p-5 rounded-[1.5rem] border transition-all ${acc.active ? 'bg-indigo-600/10 border-indigo-500/30' : 'bg-white/3 border-white/5 hover:border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${acc.active ? 'bg-indigo-400 shadow-glow animate-pulse' : 'bg-white/15'}`} />
+                            <div>
+                              <div className="font-black uppercase tracking-tight text-sm text-white">{acc.name}</div>
+                              <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">UID: {acc.id.toString().slice(-4)}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!acc.active && (
+                              <button onClick={() => { setAccounts(accounts.map(a => ({...a, active: a.id === acc.id}))); setWalletAddress(acc.address); setIsWalletGateOpen(false); }} className="px-3 py-1.5 glass rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10">Switch</button>
+                            )}
+                            {acc.active && <span className="px-3 py-1.5 text-[10px] font-black uppercase text-indigo-400 tracking-widest">Active</span>}
+                            <button onClick={() => { if(accounts.length > 1) setAccounts(accounts.filter(a => a.id !== acc.id)); else alert('Need at least one account.'); }} className="w-8 h-8 flex items-center justify-center text-white/15 hover:text-red-400 transition-colors rounded-lg hover:bg-red-400/10">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Wallet Identity Card */}
+                  <div className="relative rounded-[2.5rem] p-8 overflow-hidden" style={{background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)'}}>
+                    <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(circle at 75% 25%, #818cf8 0%, transparent 50%)'}} />
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-300/60">Wallet Identity</div>
+                        <div className="flex gap-1">{[1,2,3].map(i => <div key={i} className="w-6 h-4 rounded-sm bg-white/10" />)}</div>
+                      </div>
+                      <div className="font-mono text-sm text-indigo-200/70 tracking-widest mb-1">
+                        {walletAddress ? `${walletAddress.slice(0,8)}...${walletAddress.slice(-6)}` : 'NOT CONNECTED'}
+                      </div>
+                      <div className="font-black text-xl text-white tracking-tight">{userProfile.name}</div>
+                      <div className="flex items-center justify-between mt-8">
+                        <div>
+                          <div className="text-[9px] font-black uppercase tracking-widest text-indigo-300/50 mb-0.5">Points</div>
+                          <div className="font-black text-white">{points.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] font-black uppercase tracking-widest text-indigo-300/50 mb-0.5">HELA</div>
+                          <div className="font-black text-white">{helaBalance}</div>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                          <Zap size={18} className="text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Matrix Status */}
+                  <div className="glass-card rounded-[2.5rem] p-6 bg-gradient-to-br from-emerald-600/10 to-transparent border-emerald-500/10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-emerald-400"><Layers size={24} /></div>
+                      <div>
+                        <div className="font-black uppercase tracking-tight text-sm">Matrix Status: Elite</div>
+                        <div className="text-[10px] text-white/30 font-bold uppercase tracking-widest">All neural connections established</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20">LIVE</span>
+                  </div>
+                </div>
+              </div>
             </section>
           ) : (
             <div className="flex flex-col items-center justify-center py-40 animate-in zoom-in duration-1000">
