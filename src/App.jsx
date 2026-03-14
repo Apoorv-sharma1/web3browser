@@ -1044,8 +1044,8 @@ function App() {
               </div>
             </section>
           ) : activeTab === 'settings' ? (
-            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-4xl mx-auto pb-20">
-               <div className="flex items-center justify-between border-b border-white/5 pb-10">
+            <section className="animate-in fade-in slide-in-from-bottom-10 duration-700">
+               <div className="flex items-center justify-between mb-16">
                   <div>
                     <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">ACCOUNT MATRIX</h1>
                     <p className="text-white/40 text-xl font-medium tracking-tight mt-2">Managing your neural presence across the net.</p>
@@ -1128,7 +1128,7 @@ function App() {
                                onClick={() => setIsEditingProfile(false)}
                                className="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-lg transition-all hover:bg-indigo-500 active:scale-95 shadow-xl shadow-indigo-600/30"
                              >
-                               SAVE CHANGES
+                                SAVE CHANGES
                              </button>
                           </div>
                        </div>
@@ -1171,8 +1171,14 @@ function App() {
                                                setAccounts(accounts.map(a => ({...a, active: a.id === acc.id})));
                                                setWalletAddress(acc.address);
                                                setIsWalletGateOpen(false);
-                                               setWalletAddress(acc.address);
-                                               setIsWalletGateOpen(false);
+                                               alert(`Switched to Core: ${acc.name}`);
+                                             }}
+                                             className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border-white/10"
+                                           >
+                                             Switch
+                                           </button>
+                                        )}
+                                        <button 
                                           onClick={() => {
                                             if(accounts.length > 1) {
                                               setAccounts(accounts.filter(a => a.id !== acc.id));
