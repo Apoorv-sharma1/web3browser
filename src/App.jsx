@@ -658,11 +658,11 @@ function App() {
               {/* Recommended Searches */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { title: 'Hela Network', query: 'hela network', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
-                  { title: 'Top DeFi Projects', query: 'top defi projects 2026', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
-                  { title: 'NFT Trends', query: 'latest nft market trends', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
+                  { title: 'Hela Network', url: 'https://hela.network', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
+                  { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
+                  { title: 'NFT Trends', url: 'https://rarible.com/explore', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
-                  <div key={i} onClick={() => executeSearch(item.query)} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
+                  <div key={i} onClick={() => setActiveDApp({ id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
                     <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all">{item.icon}</div>
                     <h3 className="text-xl font-black mb-2 tracking-tight group-hover:text-indigo-400 transition-colors uppercase">{item.title}</h3>
                     <p className="text-sm text-white/30 font-bold italic">{item.desc}</p>
