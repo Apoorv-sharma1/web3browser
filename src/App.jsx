@@ -100,6 +100,7 @@ function App() {
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [redeemedVouchers, setRedeemedVouchers] = useState([]); // Tracks purchased vouchers
   
   // Quest States
   const [activeQuests, setActiveQuests] = useState([]); // Tracks in-progress quests
@@ -385,6 +386,15 @@ function App() {
         const data = await res.json();
         setPoints(prev => prev + (data.points || 0));
         return true;
+      } else {
+        const data = await res.json();
+        console.warn('Reward claim failed:', data.error);
+        if (activityType === 'wtf_quest' && !data.error) {
+           // Provide a local fallback alert if daily limit blocked it but didn't return an explicit message
+           console.warn('Daily quest limit reached.');
+        } else if (activityType === 'wtf_quest') {
+           alert(data.error || 'Daily quest limit reached.');
+        }
       }
     } catch(err) {
       console.error(err);
@@ -925,9 +935,18 @@ function App() {
                          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
                            <Globe size={100} />
                          </div>
-                         <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400 relative z-10">Browsing Rewards</h3>
-                         <p className="text-sm text-white/40 font-bold relative z-10">Earn points automatically as you search and navigate the decentralized web.</p>
+                         <div className="flex justify-between items-start relative z-10">
+                           <h3 className="text-xl font-black uppercase tracking-tighter text-indigo-400">Browsing Payload</h3>
+                           <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30">Auto-Yield</span>
+                         </div>
+                         <p className="text-sm text-white/40 font-bold relative z-10">Passive point generation enabled. Browse the ecosystem to automatically stack points over time.</p>
                          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative z-10">Active: +1.5x Multiplier Enabled</div>
+                         <button 
+                           onClick={() => setActiveTab('dapps')}
+                           className="w-full py-3 glass rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 hover:text-white transition-all border-white/10 mt-2 relative z-10 flex items-center justify-center gap-2"
+                         >
+                           Explore DApps
+                         </button>
                       </div>
                       
                       {/* WTF Quests */}
@@ -1574,12 +1593,12 @@ function App() {
             <button onClick={async () => {
                  if (!walletAddress) return alert('Connect wallet first');
                  setIsQuesting(true);
-                 setTimeout(async () => {
-                   await claimReward('wtf_quest');
-                   setIsQuesting(false);
+                 const success = await claimReward('wtf_quest');
+                 setIsQuesting(false);
+                 if (success) {
                    setShowQuestModal(false);
                    alert('Daily Main Quest Sync Complete: +50 Points!');
-                 }, 1500);
+                 }
                }}
                disabled={isQuesting} className="w-full mt-6 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 border border-white/10">
                  {isQuesting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Complete Daily Check-in (+50)'}
@@ -1597,8 +1616,8 @@ function App() {
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-8">Broadcast your identity to expand the matrix and earn 50 PTS.</p>
             
             <div className="space-y-3 mb-6">
-               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
-               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
+               <button onClick={() => { window.open('https://api.whatsapp.com/send?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser.com', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#25D366]/20 hover:text-[#25D366] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12A12 12 0 0 0 12.029 4.456zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825.001 6.938 3.113 6.938 6.938-.001 3.825-3.114 6.938-6.938 6.942z"/></svg> WhatsApp</button>
+               <button onClick={() => { window.open('https://twitter.com/intent/tweet?text=Check%20out%20this%20Web3%20Browser!%20https%3A%2F%2Fweb3browser.com', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg> X (Twitter)</button>
                <button onClick={() => { window.open('https://t.me/share/url?url=https://web3browser.com&text=Check%20out%20this%20Web3%20Browser!', '_blank'); claimReward('node_referral'); setShowShareModal(false); }} className="w-full py-4 glass rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0088cc]/20 hover:text-[#0088cc] transition-all border border-white/10 flex items-center justify-center gap-3"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram</button>
             </div>
             
@@ -1651,7 +1670,8 @@ function App() {
                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-4 pb-4 custom-scrollbar">
+            <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400 mb-4 px-2">Available Vouchers</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-4 pb-4 custom-scrollbar mb-8">
                {[
                  { brand: 'Amazon', value: '$10 Gift Card', icon: '🛒', cost: 10000, color: 'hover:border-yellow-500/50 hover:bg-yellow-500/10' },
                  { brand: 'Apple', value: '$25 Gift Card', icon: '🍎', cost: 25000, color: 'hover:border-white/50 hover:bg-white/10' },
@@ -1670,7 +1690,10 @@ function App() {
                           onClick={() => {
                             if (points < v.cost) return alert('Insufficient points for this voucher.');
                             setPoints(p => p - v.cost);
-                            alert(`Success! Check your registered email for the ${v.brand} voucher code.`);
+                            const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+                            const keyId = 'KEY-' + Math.floor(Math.random() * 100000);
+                            setRedeemedVouchers(prev => [...prev, { brand: v.brand, value: v.value, code, keyId }]);
+                            alert(`Success! Redeemed ${v.brand} voucher.`);
                           }}
                           className="px-4 py-2 glass rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all"
                         >
@@ -1680,6 +1703,34 @@ function App() {
                   </div>
                ))}
             </div>
+
+            {redeemedVouchers.length > 0 && (
+               <>
+                 <h3 className="text-sm font-black uppercase tracking-widest text-purple-400 mb-4 px-2">Redeemed Rewards</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {redeemedVouchers.map((rv, idx) => (
+                     <div key={idx} className="glass rounded-2xl p-5 border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-transparent flex flex-col gap-3 relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-bl-[100%]"></div>
+                       <div className="flex justify-between items-center">
+                         <span className="font-black uppercase tracking-widest text-white">{rv.brand}</span>
+                         <span className="text-[10px] font-bold text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">Active</span>
+                       </div>
+                       <div className="text-lg font-black text-white/80">{rv.value}</div>
+                       <div className="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2 mt-2">
+                         <div className="flex justify-between items-center">
+                           <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Coupon Code</span>
+                           <span className="font-mono text-xs font-bold text-amber-400 tracking-widest select-all">{rv.code}</span>
+                         </div>
+                         <div className="flex justify-between items-center">
+                           <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Key ID</span>
+                           <span className="font-mono text-[10px] text-white/50">{rv.keyId}</span>
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </>
+            )}
           </div>
         </div>
       )}
