@@ -838,11 +838,44 @@ function App() {
                 </div>
               </div>
 
-              {/* Security Protocol Section */}
-              <div className="space-y-10 pt-10">
+              {/* Concept Visualization */}
+              <div className="glass-card rounded-[4rem] p-16 border-indigo-500/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent flex flex-col lg:flex-row items-center gap-12">
+                 <div className="flex-1 space-y-8">
+                    <h2 className="text-5xl font-black tracking-tighter uppercase italic leading-none">THE BLOCKCHAIN <br/><span className="gradient-text">REVOLUTION</span></h2>
+                    <p className="text-white/40 text-lg font-medium leading-relaxed">
+                       Blockchain technology is the foundation of Web3. It creates a digital environment where users can interact, trade, and build without permission from central authorities.
+                    </p>
+                    <div className="flex gap-6">
+                       <button className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95">
+                          START JOURNEY
+                       </button>
+                    </div>
+                 </div>
+                 <div className="flex-1 w-full flex justify-center">
+                    <div className="w-full max-w-md aspect-square glass rounded-[3rem] border-white/5 overflow-hidden flex items-center justify-center relative group">
+                        <div className="absolute inset-0 bg-indigo-600/10 group-hover:bg-indigo-600/20 transition-colors"></div>
+                        <Layers size={100} className="text-indigo-400 animate-float opacity-30" />
+                        <div className="absolute flex flex-col items-center gap-2">
+                           <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-glow"></div>
+                           <div className="w-1 h-32 bg-gradient-to-b from-indigo-500 to-transparent"></div>
+                        </div>
+                    </div>
+                 </div>
+              </div>
+            </section>
+          ) : activeTab === 'security' ? (
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20">
+              <div className="text-center mb-16 relative">
+                 <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 blur-[100px] -z-10"></div>
+                 <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">SECURITY PROTOCOL</h1>
+                 <p className="text-white/30 text-xl font-medium tracking-tight uppercase tracking-widest">Fortifying your decentralized presence.</p>
+              </div>
+
+              {/* Security Protocol Dashboard */}
+              <div className="space-y-10">
                 <div className="flex items-center gap-4 border-l-4 border-red-500 pl-6">
-                  <h2 className="text-3xl font-black uppercase tracking-tighter">Security Protocol</h2>
-                  <div className="text-[10px] font-black uppercase text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-500/20">Critical Shield</div>
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Active Protection</h2>
+                  <div className="text-[10px] font-black uppercase text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-500/20">Critical Shield Active</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -870,46 +903,25 @@ function App() {
                     icon={<AlertTriangle size={24} className="text-yellow-400" />}
                     tag="Guardianship"
                   />
-                  <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5">
+                  <div className="glass-card rounded-[3rem] p-8 border-white/5 space-y-6 bg-red-500/5 col-span-1 md:col-span-2">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
                         <CheckCircle size={24} className="text-red-400" />
                       </div>
-                      <h3 className="text-xl font-black tracking-tight uppercase">Safety Manifesto</h3>
+                      <h3 className="text-3xl font-black tracking-tight uppercase">Web3 Safety Tips</h3>
                     </div>
-                    <ul className="space-y-3 text-sm font-medium text-white/50">
-                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Never share your seed phrase or private keys.</li>
-                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Verify website URLs before connecting your wallet.</li>
-                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Avoid suspicious or unknown decentralized apps.</li>
-                      <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />Review smart contract permissions carefully.</li>
-                    </ul>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <ul className="space-y-4 text-base font-bold text-white/50">
+                         <li className="flex items-start gap-3"><div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-glow" />Never share your seed phrase or private keys.</li>
+                         <li className="flex items-start gap-3"><div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-glow" />Verify website URLs before connecting your wallet.</li>
+                       </ul>
+                       <ul className="space-y-4 text-base font-bold text-white/50">
+                         <li className="flex items-start gap-3"><div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-glow" />Avoid suspicious or unknown decentralized apps.</li>
+                         <li className="flex items-start gap-3"><div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-glow" />Review smart contract permissions carefully.</li>
+                       </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Concept Visualization */}
-              <div className="glass-card rounded-[4rem] p-16 border-indigo-500/10 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent flex flex-col lg:flex-row items-center gap-12">
-                 <div className="flex-1 space-y-8">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase italic leading-none">THE BLOCKCHAIN <br/><span className="gradient-text">REVOLUTION</span></h2>
-                    <p className="text-white/40 text-lg font-medium leading-relaxed">
-                       Blockchain technology is the foundation of Web3. It creates a digital environment where users can interact, trade, and build without permission from central authorities.
-                    </p>
-                    <div className="flex gap-6">
-                       <button className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95">
-                          START JOURNEY
-                       </button>
-                    </div>
-                 </div>
-                 <div className="flex-1 w-full flex justify-center">
-                    <div className="w-full max-w-md aspect-square glass rounded-[3rem] border-white/5 overflow-hidden flex items-center justify-center relative group">
-                        <div className="absolute inset-0 bg-indigo-600/10 group-hover:bg-indigo-600/20 transition-colors"></div>
-                        <Layers size={100} className="text-indigo-400 animate-float opacity-30" />
-                        <div className="absolute flex flex-col items-center gap-2">
-                           <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-glow"></div>
-                           <div className="w-1 h-32 bg-gradient-to-b from-indigo-500 to-transparent"></div>
-                        </div>
-                    </div>
-                 </div>
               </div>
             </section>
           ) : activeTab === 'settings' ? (
