@@ -111,7 +111,7 @@ function App() {
         'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
         'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com',
         'geeksforgeeks.org', 'wikipedia.org', 'en.wikipedia.org', 'investopedia.com', 'medium.com',
-        'hela.network', 'magiceden.io'
+        'hela.network', 'magiceden.io', 'helalabs.com'
       ];
       const domain = activeDApp.url.toLowerCase();
       
@@ -659,7 +659,7 @@ function App() {
               {/* Recommended Searches */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { title: 'Hela Network', url: 'https://docs.hela.network', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
+                  { title: 'Hela Network', url: 'https://docs.helalabs.com', icon: <Globe size={20} className="text-indigo-400"/>, desc: 'Layer 1 Protocol' },
                   { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
                   { title: 'NFT Trends', url: 'https://magiceden.io', icon: <Layout size={20} className="text-purple-400"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
