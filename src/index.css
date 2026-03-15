@@ -137,6 +137,10 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.bg-base { background-color: var(--bg-dark); }
+.bg-base\/60 { background-color: rgba(7, 9, 12, 0.6); }
+.bg-base\/95 { background-color: rgba(7, 9, 12, 0.95); }
+
 [data-theme='warm'] {
   --primary: #F78B2D;
   --primary-dark: #E86A1F;
@@ -191,15 +195,15 @@ body {
 [data-theme='warm'] .text-red-400,
 [data-theme='warm'] .text-blue-400 { color: var(--text-heading) !important; }
 
-[data-theme='warm'] .text-white\\/40,
-[data-theme='warm'] .text-white\\/50,
-[data-theme='warm'] .text-white\\/70 { color: var(--text-body) !important; opacity: 1; }
+[data-theme='warm'] .text-white\/40,
+[data-theme='warm'] .text-white\/50,
+[data-theme='warm'] .text-white\/70 { color: var(--text-body) !important; opacity: 1; }
 
-[data-theme='warm'] .bg-white\\/5, 
-[data-theme='warm'] .bg-white\\/10 { background-color: var(--bg-section) !important; }
+[data-theme='warm'] .bg-white\/5, 
+[data-theme='warm'] .bg-white\/10 { background-color: var(--bg-section) !important; }
 
-[data-theme='warm'] .border-white\\/5,
-[data-theme='warm'] .border-white\\/10 { border-color: rgba(247, 139, 45, 0.2) !important; }
+[data-theme='warm'] .border-white\/5,
+[data-theme='warm'] .border-white\/10 { border-color: rgba(247, 139, 45, 0.2) !important; }
 
 [data-theme='warm'] .bg-indigo-600,
 [data-theme='warm'] .bg-purple-600, 
@@ -213,16 +217,16 @@ body {
   border: none !important;
 }
 
-
-[data-theme='warm'] .bg-[#0a0c0f], 
-[data-theme='warm'] .bg-[#07090c], 
+[data-theme='warm'] .bg-\[\#0a0c0f\], 
+[data-theme='warm'] .bg-\[\#07090c\], 
 [data-theme='warm'] .bg-base, 
-[data-theme='warm'] .bg-black\\/20, 
-[data-theme='warm'] .bg-[#0d1117] { background-color: var(--bg-main) !important; }
+[data-theme='warm'] .bg-black\/20, 
+[data-theme='warm'] .bg-\[\#0d1117\] { background-color: var(--bg-main) !important; }
 
 [data-theme='warm'] .bg-card-alpha,
-[data-theme='warm'] .bg-base\\/60 { background-color: var(--bg-card) !important; }
+[data-theme='warm'] .bg-base\/60,
+[data-theme='warm'] .bg-\[\#07090c\]\/60,
+[data-theme='warm'] .bg-\[\#07090c\]\/95 { background-color: var(--bg-card) !important; }
 
 [data-theme='warm'] .border-glass-border, 
 [data-theme='warm'] .border-glass-border0 { border-color: rgba(247, 139, 45, 0.2) !important; }
-

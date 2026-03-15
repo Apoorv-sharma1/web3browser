@@ -811,10 +811,10 @@ function App() {
 
 
   return (
-    <div className={`flex w-full h-screen bg-[#07090c] text-heading selection:bg-indigo-500/30 font-sans`}>
+    <div className={`flex w-full h-screen bg-base text-heading selection:bg-indigo-500/30 font-sans`}>
       {/* Wallet Gatekeeper UI */}
       {(!walletAddress || isWalletGateOpen) && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c] overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-base overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-[50%] h-[50%] bg-primary/10 rounded-full blur-[150px] animate-pulse"></div>
             <div className="absolute bottom-1/4 right-1/4 w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[150px] animate-pulse delay-1000"></div>
@@ -966,7 +966,7 @@ function App() {
         </div>
 
         {/* Header (Integrated Navigation) */}
-        <header className="h-16 border-b border-glass-border flex items-center justify-between px-6 bg-[#07090c]/60 backdrop-blur-3xl sticky top-0 z-30 gap-4">
+        <header className="h-16 border-b border-glass-border flex items-center justify-between px-6 bg-base/60 backdrop-blur-3xl sticky top-0 z-30 gap-4">
           <div className="flex items-center gap-4 flex-1 max-w-5xl">
             {/* Nav Controls */}
             <div className="hidden sm:flex items-center gap-1.5 shrink-0">
@@ -1161,7 +1161,7 @@ function App() {
 
                   <div className="flex-1 relative bg-white overflow-hidden">
                     {iframeStatus === 'loading' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07090c] z-20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-base z-20">
                         <div className="w-12 h-12 border-4 border-card-alpha border-t-primary rounded-full animate-spin"></div>
                         <p className="mt-4 text-[9px] font-black tracking-[0.3em] uppercase text-body/20">Establishing Neural Link</p>
                       </div>
@@ -2406,7 +2406,7 @@ function App() {
 
       {/* Redeem Modal */}
       {showRedeemModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-base/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
           <div className="glass-card max-w-md w-full p-8 rounded-[3rem] border-glass-border0 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent shadow-[0_0_100px_rgba(0,209,255,0.1)]">
             <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-2">REDEEM <span className="text-[#00d1ff]">HELA</span></h2>
             <p className="text-body/40 text-sm font-bold mb-8">Select the amount of points you wish to convert. 1000 PTS = 1 HELA.</p>
@@ -2462,7 +2462,7 @@ function App() {
 
       {/* Quest Modal */}
       {showQuestModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-base/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
           <div className="glass-card max-w-lg w-full p-8 rounded-[3rem] border-purple-500/20 relative overflow-hidden bg-gradient-to-br from-purple-900/10 to-transparent">
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -2561,7 +2561,7 @@ function App() {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-base/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
           <div className="glass-card max-w-sm w-full p-8 rounded-[3rem] border-indigo-500/20 relative overflow-hidden bg-gradient-to-br from-indigo-900/10 to-transparent text-center">
             <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary"><Users size={32} /></div>
             <h2 className="text-2xl font-black uppercase tracking-tighter italic mb-2">SHARE <span className="text-primary">NODE</span></h2>
@@ -2601,7 +2601,7 @@ function App() {
 
       {/* Voucher Modal */}
       {showVoucherModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07090c]/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-base/95 backdrop-blur-3xl animate-in zoom-in duration-300 px-6">
           <div className="glass-card max-w-4xl w-full p-10 rounded-[3rem] border-emerald-500/20 relative overflow-hidden bg-gradient-to-br from-emerald-900/10 to-transparent max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-start mb-8 shrink-0">
               <div>
