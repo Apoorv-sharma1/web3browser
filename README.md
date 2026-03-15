@@ -50,9 +50,12 @@ The frontend is a highly interactive Single Page Application built using **React
 - **Neural Guard**: The active security layer blocking ads and trackers on decentralized websites.
 - **Python Backend Engine**: An external service validating gamification metrics and managing the DApp directory.
 - 
-**Github Links**
+**Github Repo Links**
+  
 Frontend : https://github.com/Apoorv-sharma1/web3browser
+
 Backend : https://github.com/Apoorv-sharma1/web3browser_backend
+
 ---
 
 ## 🔗 HeLa Integration
