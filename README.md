@@ -15,6 +15,17 @@ Our browser aims to solve the steep learning curve associated with Web3. We've b
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="screenshots/media__1773548497610.png" width="45%" alt="Browser Interface" />
+  <img src="screenshots/media__1773548500528.png" width="45%" alt="DApp View" />
+  <img src="screenshots/media__1773548503095.png" width="45%" alt="Wallet Gateway" />
+  <img src="screenshots/media__1773548507357.png" width="45%" alt="Identity Matrix" />
+</div>
+
+---
+
 ## 🏗️ Project Structure
 The frontend is built using **React** and **Vite**, structured for high performance and immersive UI/UX.
 
