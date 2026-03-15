@@ -2121,6 +2121,77 @@ function App() {
               </div>
             </section>
             </div>
+          ) : tab.type === 'security' ? (
+            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
+            <section className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-6xl mx-auto pb-20 px-10 pt-10">
+              <div className="text-center mb-16 relative">
+                 <div className="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 blur-[100px] -z-10"></div>
+                 <h1 className="text-6xl font-black mb-4 tracking-tighter uppercase italic leading-tight">SECURITY PROTOCOL</h1>
+                 <p className="text-body/30 text-xl font-medium tracking-tight uppercase tracking-widest">Fortifying your decentralized presence.</p>
+              </div>
+
+              {/* Security Protocol Dashboard */}
+              <div className="space-y-10">
+                <div className="flex items-center gap-4 border-l-4 border-red-500 pl-6">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Active Protection</h2>
+                  <div className="text-[10px] font-black uppercase text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-500/20">Critical Shield Active</div>
+                </div>
+
+                {/* Security Dashboard */}
+                <div className="glass-card rounded-[3.5rem] p-10 border-glass-border bg-gradient-to-br from-red-500/5 to-transparent relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-8 opacity-5"><Shield size={120} /></div>
+                   <div className="relative z-10">
+                      <div className="flex flex-col lg:flex-row justify-between gap-10">
+                         <div className="flex-1 space-y-6">
+                            <div>
+                               <h3 className="text-2xl font-black uppercase tracking-tight mb-2 italic">Neural Guard Configuration</h3>
+                               <p className="text-sm text-body/40 font-bold leading-relaxed">Adjust the intensity of the neural link shielding. Higher levels provide stricter isolation but may affect functionality of some legacy protocols.</p>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-4">
+                               {[
+                                 { id: 'low', label: 'Balanced', desc: 'Standard protection', color: 'indigo' },
+                                 { id: 'medium', label: 'Shielded', desc: 'Active ad filtering', color: 'emerald' },
+                                 { id: 'high', label: 'Paranoid', desc: 'Maximum isolation', color: 'red' }
+                               ].map((level) => (
+                                 <button 
+                                   key={level.id}
+                                   onClick={() => setShieldIntensity(level.id)}
+                                   className={`flex-1 min-w-[140px] p-5 rounded-[2rem] border transition-all text-left group ${
+                                     shieldIntensity === level.id 
+                                       ? `bg-${level.color}-500/20 border-${level.color}-500/40 shadow-lg shadow-${level.color}-500/10` 
+                                       : 'bg-card-alpha border-glass-border hover:bg-card-alpha0'
+                                   }`}
+                                 >
+                                   <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${shieldIntensity === level.id ? `text-${level.color}-400` : 'text-body/20'}`}>{level.label}</div>
+                                   <div className="text-sm font-bold text-heading">{level.desc}</div>
+                                 </button>
+                               ))}
+                            </div>
+                         </div>
+                         <div className="w-px bg-glass-border hidden lg:block" />
+                         <div className="flex-1 space-y-6 lg:pl-4">
+                            <div>
+                               <h3 className="text-2xl font-black uppercase tracking-tight mb-2 italic">Active Threat Metrics</h3>
+                               <p className="text-sm text-body/40 font-bold leading-relaxed">Current session neural threat mitigation.</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                               <div className="glass bg-card-alpha rounded-3xl p-5 border border-glass-border">
+                                  <div className="text-3xl font-black text-emerald-400 mb-1">2,841</div>
+                                  <div className="text-[9px] font-black uppercase tracking-[0.2em] text-body/40">Trackers Blocked</div>
+                               </div>
+                               <div className="glass bg-card-alpha rounded-3xl p-5 border border-glass-border">
+                                  <div className="text-3xl font-black text-indigo-400 mb-1">14</div>
+                                  <div className="text-[9px] font-black uppercase tracking-[0.2em] text-body/40">Malicious Domains</div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            </section>
+            </div>
           ) : (
             <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar flex flex-col items-center justify-center">
             <div className="flex flex-col items-center justify-center py-40 animate-in zoom-in duration-1000">
