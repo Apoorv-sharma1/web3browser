@@ -435,39 +435,11 @@ function App() {
     if (activeTabObj.dapp) {
       setIframeStatus('loading');
       
-      // VIP Sites: Domains that we KNOW block iframes. 
-      // Skip the backend check and go straight to proxy for these for speed.
-      const VIP_SITES = [
-        'youtube.com', 'google.com', 'opensea.io', 'github.com', 'twitter.com', 'x.com', 
-        'facebook.com', 'instagram.com', 'linkedin.com', 'binance.com', 'academy.binance.com',
-        'geeksforgeeks.org', 'wikipedia.org', 'en.wikipedia.org', 'investopedia.com', 'medium.com',
-        'hela.network', 'magiceden.io', 'helalabs.com', 'superrare.com',
-        'coingecko.com', 'coinmarketcap.com', 'zora.co', 'dune.com',
-        'polygon.technology', 'optimism.io', 'solscan.io', 'defillama.com'
-      ];
-      const domain = activeTabObj.dapp.url.toLowerCase();
-      
-      if (VIP_SITES.some(site => domain.includes(site))) {
-        setIframeStatus('blocked');
-        return;
-      }
-
+      // Load directly without checking with the backend to eliminate delay
       setIsDeepScanning(true);
       setTimeout(() => setIsDeepScanning(false), 2000);
 
-      fetch(`${API_URL}/search/check-frame?url=${encodeURIComponent(activeTabObj.dapp.url)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.frameable) {
-            setIframeStatus('loaded');
-          } else {
-            setIframeStatus('blocked');
-          }
-        })
-        .catch(() => {
-          // If the check fails or times out, default to the proxy (blocked mode) to be safe
-          setIframeStatus('blocked');
-        });
+      // The iframe onLoad event will automatically transition from 'loading' to 'loaded'
     }
   }, [activeTabId, tabs]);
 
@@ -1190,26 +1162,8 @@ function App() {
                   <div className="flex-1 relative bg-white overflow-hidden">
                     {iframeStatus === 'loading' && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-base z-20">
-                        <div className="w-12 h-12 border-2 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                        <div className="w-12 h-12 border-4 border-card-alpha border-t-primary rounded-full animate-spin"></div>
                         <p className="mt-4 text-[9px] font-black tracking-[0.3em] uppercase text-body/20">Establishing Neural Link</p>
-                      </div>
-                    )}
-
-                    {iframeStatus === 'blocked' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-base p-10 text-center z-10">
-                         <div className="w-20 h-20 bg-red-500/5 rounded-2xl flex items-center justify-center mb-6 border border-red-500/10 shadow-2xl">
-                            <ShieldAlert size={40} className="text-red-400/60" />
-                         </div>
-                         <h3 className="text-3xl font-black mb-3 tracking-tighter uppercase italic text-body/80">Cross-Origin Breach</h3>
-                         <p className="max-w-md text-body/20 text-xs font-bold mb-8 leading-relaxed">
-                            This node enforces strict origin isolation. Establishing an external breach is required to proceed.
-                         </p>
-                         <button 
-                           onClick={() => window.open(tab.dapp.url, '_blank')}
-                           className="px-8 py-4 button-primary text-heading rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95"
-                         >
-                            Launch External Sandbox
-                         </button>
                       </div>
                     )}
 
