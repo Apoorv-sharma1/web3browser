@@ -2,6 +2,10 @@
 
 An immersive, decentralized web browser and application gateway built for the next generation of the internet. This platform is designed to promote Web3 adoption for beginners through a gamified, secure, and intuitive experience while integrating powerful features like a built-in wallet and native ad-blocking.
 
+## ▶️Demo Youtube Link
+https://youtu.be/tfX2hKEimkA?si=cyxPvtFyo0JVyq-6
+
+
 ## 🚀 Product Overview
 **What is our dApp about?**
 
