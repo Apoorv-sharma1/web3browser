@@ -3,10 +3,12 @@
 An immersive, decentralized web browser and application gateway built for the next generation of the internet. This platform is designed to promote Web3 adoption for beginners through a gamified, secure, and intuitive experience while integrating powerful features like a built-in wallet and native ad-blocking.
 
 ## 🚀 Product Overview
-**What is your dApp about?**
+**What is our dApp about?**
+
 An immersive, decentralized web browser and application gateway built for the next generation of the internet. This platform promotes Web3 adoption for beginners through a gamified, secure, and intuitive experience featuring an inbuilt wallet and native ad-blocking.
 
-**What problem are you solving?**
+**What problem are we solving?**
+
 The steep learning curve, fragmentation, and security risks associated with Web3. Beginners often fall victim to phishing sites or get overwhelmed by wallet setups. We provide a safe, unified educational gateway that protects users with active threat mitigation while gamifying their learning process.
 
 ---
