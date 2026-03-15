@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { 
   Layout, 
@@ -146,7 +146,7 @@ function App() {
       type: 'explore', 
       url: '', 
       name: 'New Tab', 
-      icon: '🌐', 
+      icon: '­ƒîÉ', 
       history: [], 
       historyIndex: -1, 
       isBookmarked: false,
@@ -359,7 +359,7 @@ function App() {
       type, 
       url, 
       name, 
-      icon: '🌐', 
+      icon: '­ƒîÉ', 
       history: [], 
       historyIndex: -1, 
       isBookmarked: false,
@@ -505,7 +505,7 @@ function App() {
       const url = query.startsWith('http') ? query : `https://${query}`;
       updateActiveTab({ 
         query: query,
-        dapp: { id: 'custom', name: url, url: url, icon: '🌐', category: 'Web' },
+        dapp: { id: 'custom', name: url, url: url, icon: '­ƒîÉ', category: 'Web' },
         type: 'explore'
       });
     } else {
@@ -980,7 +980,7 @@ function App() {
                       historyIndex: newIndex,
                       query: prevHistory.query,
                       type: prevHistory.type === 'url' ? 'explore' : 'search',
-                      dapp: prevHistory.type === 'url' ? { id: 'custom', name: prevHistory.query, url: prevHistory.query.startsWith('http') ? prevHistory.query : `https://${prevHistory.query}`, icon: '🌐', category: 'Web' } : null,
+                      dapp: prevHistory.type === 'url' ? { id: 'custom', name: prevHistory.query, url: prevHistory.query.startsWith('http') ? prevHistory.query : `https://${prevHistory.query}`, icon: '­ƒîÉ', category: 'Web' } : null,
                       name: prevHistory.type === 'url' ? prevHistory.query : `Search: ${prevHistory.query}`
                     });
                   }
@@ -999,7 +999,7 @@ function App() {
                       historyIndex: newIndex,
                       query: nextHistory.query,
                       type: nextHistory.type === 'url' ? 'explore' : 'search',
-                      dapp: nextHistory.type === 'url' ? { id: 'custom', name: nextHistory.query, url: nextHistory.query.startsWith('http') ? nextHistory.query : `https://${nextHistory.query}`, icon: '🌐', category: 'Web' } : null,
+                      dapp: nextHistory.type === 'url' ? { id: 'custom', name: nextHistory.query, url: nextHistory.query.startsWith('http') ? nextHistory.query : `https://${nextHistory.query}`, icon: '­ƒîÉ', category: 'Web' } : null,
                       name: nextHistory.type === 'url' ? nextHistory.query : `Search: ${nextHistory.query}`
                     });
                   }
@@ -1213,7 +1213,7 @@ function App() {
                             <div 
                                key={idx}
                                onClick={() => {
-                                 updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '🌐', category: 'Search' } });
+                                 updateActiveTab({ dapp: { id: `search-${idx}`, name: result.domain, url: result.url, icon: '­ƒîÉ', category: 'Search' } });
                                }}
                                className="group glass-card p-6 rounded-[1.5rem] cursor-pointer hover:border-primary"
                             >
@@ -1262,7 +1262,7 @@ function App() {
                   { title: 'Top DeFi Projects', url: 'https://defillama.com', icon: <TrendingUp size={20} className="text-emerald-400"/>, desc: 'Yield & Liquidity' },
                   { title: 'NFT Trends', url: 'https://superrare.com', icon: <Layout size={20} className="text-primary"/>, desc: 'Digital Assets' }
                 ].map((item, i) => (
-                  <div key={i} onClick={() => updateActiveTab({ dapp: { id: `explore-${i}`, name: item.title, url: item.url, icon: '🌐', category: item.desc } })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
+                  <div key={i} onClick={() => updateActiveTab({ dapp: { id: `explore-${i}`, name: item.title, url: item.url, icon: '­ƒîÉ', category: item.desc } })} className="glass-card p-8 rounded-[2.5rem] hover:border-indigo-500/40 transition-all cursor-pointer group">
                     <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all">{item.icon}</div>
                     <h3 className="text-xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors uppercase">{item.title}</h3>
                     <p className="text-sm text-body/30 font-bold italic">{item.desc}</p>
@@ -1286,7 +1286,7 @@ function App() {
                   {DAPPS.slice(0, 4).map((dapp) => (
                     <div key={dapp.id} onClick={() => updateActiveTab({ dapp: dapp })} className="flex flex-col items-center text-center group cursor-pointer">
                       <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 group-hover:-translate-y-2 transition-all shadow-xl group-hover:shadow-indigo-500/20">
-                        {dapp.icon || '🌐'}
+                        {dapp.icon || '­ƒîÉ'}
                       </div>
                       <span className="text-base font-black uppercase tracking-tight group-hover:text-primary transition-colors">{dapp.name}</span>
                     </div>
@@ -1346,7 +1346,7 @@ function App() {
                     
                     <div className="flex items-start justify-between mb-10">
                       <div className="w-20 h-20 glass rounded-3xl flex items-center justify-center text-4xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl border-glass-border0 group-hover:shadow-indigo-500/20">
-                        {dapp.icon || '🌐'}
+                        {dapp.icon || '­ƒîÉ'}
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary bg-primary/10 px-4 py-2 rounded-full border border-indigo-500/20">
                         {dapp.category}
@@ -1525,7 +1525,7 @@ function App() {
                                      </div>
                                      <div>
                                         <div className="text-sm font-black uppercase tracking-tight text-body/80">{info.label}</div>
-                                        <div className="text-[9px] font-bold text-body/20 uppercase tracking-widest">{reward.created_at ? new Date(reward.created_at).toLocaleTimeString() : ''} · {reward.created_at ? new Date(reward.created_at).toLocaleDateString() : ''}</div>
+                                        <div className="text-[9px] font-bold text-body/20 uppercase tracking-widest">{reward.created_at ? new Date(reward.created_at).toLocaleTimeString() : ''} ┬À {reward.created_at ? new Date(reward.created_at).toLocaleDateString() : ''}</div>
                                      </div>
                                   </div>
                                   <div className={`text-sm font-black ${info.color}`}>
@@ -1693,35 +1693,35 @@ function App() {
                     description="A decentralized exchange (DEX) where you can swap tokens directly from your wallet without needing a central middleman."
                     tag="DeFi Exchange"
                     url="https://app.uniswap.org"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-uniswap', name: 'Uniswap', url, icon: '🦄', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-uniswap', name: 'Uniswap', url, icon: '­ƒªä', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="OpenSea" 
                     description="The largest marketplace for digital collectibles (NFTs). You can buy, sell, or discover unique digital art and music here."
                     tag="NFT Marketplace"
                     url="https://opensea.io"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-opensea', name: 'OpenSea', url, icon: '🌊', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-opensea', name: 'OpenSea', url, icon: '­ƒîè', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Aave" 
                     description="A protocol where you can lend or borrow crypto. It lets users earn interest on their deposits or take out loans instantly."
                     tag="Lending & Borrowing"
                     url="https://app.aave.com"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-aave', name: 'Aave', url, icon: '👻', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-aave', name: 'Aave', url, icon: '­ƒæ╗', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Lens Protocol" 
                     description="A decentralized social network graph. It allows users to own their social profile and content instead of the platform owning it."
                     tag="Decentralized Social"
                     url="https://www.lens.xyz/"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-lens', name: 'Lens', url, icon: '🌿', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-lens', name: 'Lens', url, icon: '­ƒî┐', category: 'dApp' } })}
                   />
                   <EduCard 
                     title="Friend.tech" 
                     description="A social app that lets you buy and sell 'keys' of social profiles, giving you access to private chats and community perks."
                     tag="Social Finance"
                     url="https://www.friend.tech/"
-                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-ft', name: 'Friend.tech', url, icon: '🤝', category: 'dApp' } })}
+                    onLearnMore={(url) => updateActiveTab({ dapp: { id: 'edu-ft', name: 'Friend.tech', url, icon: '­ƒñØ', category: 'dApp' } })}
                   />
                 </div>
               </div>
@@ -1735,7 +1735,7 @@ function App() {
                     </p>
                     <div className="flex gap-6">
                        <button 
-                         onClick={() => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '🌐', category: 'Education' } })}
+                         onClick={() => updateActiveTab({ dapp: { id: 'edu-web3', name: 'Web3 Guide', url: 'https://en.wikipedia.org/wiki/Web3', icon: '­ƒîÉ', category: 'Education' } })}
                          className="bg-white text-indigo-900 px-10 py-5 rounded-[2rem] font-black text-lg hover:shadow-2xl transition-all active:scale-95"
                        >
                           START JOURNEY
@@ -1904,9 +1904,7 @@ function App() {
                 </div>
               </div>
             </section>
-            </div>
           ) : tab.type === 'settings' ? (
-            <div className="flex-1 min-h-0 overflow-y-auto standard-scrollbar">
             <section className="animate-in fade-in duration-700 max-w-6xl mx-auto pb-20">
 
               {/* Hero Banner */}
@@ -1974,12 +1972,12 @@ function App() {
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-body/40 mb-5 flex items-center gap-2"><Trophy size={12} /> Achievements</h3>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { label: 'Web3 Pioneer', icon: '🚀', color: 'from-indigo-500/30 to-purple-500/20', border: 'border-primary' },
-                    { label: 'DeFi Explorer', icon: '🌊', color: 'from-emerald-500/20 to-teal-500/10', border: 'border-emerald-500/25' },
-                    { label: 'Hela Holder', icon: '⚡', color: 'from-amber-500/20 to-orange-500/10', border: 'border-amber-500/25' },
-                    { label: 'NFT Collector', icon: '🎨', color: 'from-pink-500/20 to-rose-500/10', border: 'border-pink-500/25' },
-                    { label: 'Block Master', icon: '🧱', color: 'from-blue-500/20 to-cyan-500/10', border: 'border-blue-500/25' },
-                    { label: 'Game Winner', icon: '🎮', color: 'from-violet-500/20 to-fuchsia-500/10', border: 'border-violet-500/25' },
+                    { label: 'Web3 Pioneer', icon: '­ƒÜÇ', color: 'from-indigo-500/30 to-purple-500/20', border: 'border-primary' },
+                    { label: 'DeFi Explorer', icon: '­ƒîè', color: 'from-emerald-500/20 to-teal-500/10', border: 'border-emerald-500/25' },
+                    { label: 'Hela Holder', icon: 'ÔÜí', color: 'from-amber-500/20 to-orange-500/10', border: 'border-amber-500/25' },
+                    { label: 'NFT Collector', icon: '­ƒÄ¿', color: 'from-pink-500/20 to-rose-500/10', border: 'border-pink-500/25' },
+                    { label: 'Block Master', icon: '­ƒº▒', color: 'from-blue-500/20 to-cyan-500/10', border: 'border-blue-500/25' },
+                    { label: 'Game Winner', icon: '­ƒÄ«', color: 'from-violet-500/20 to-fuchsia-500/10', border: 'border-violet-500/25' },
                   ].map((badge, i) => (
                     <div key={i} className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${badge.color} border ${badge.border} hover:scale-105 transition-transform cursor-default`}>
                       <span className="text-sm">{badge.icon}</span>
@@ -2148,7 +2146,7 @@ function App() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tight text-heading">Built-in <span className="text-primary">Wallet</span></h2>
-                <p className="text-[10px] text-body/30 uppercase tracking-widest mt-0.5">Hela Official Runtime Â· Chain 666888</p>
+                <p className="text-[10px] text-body/30 uppercase tracking-widest mt-0.5">Hela Official Runtime ├é┬À Chain 666888</p>
               </div>
               <button onClick={() => setShowWalletModal(false)} className="w-9 h-9 flex items-center justify-center rounded-full bg-card-alpha hover:bg-card-alpha0 text-body/50 transition-all">
                 <X size={16} />
@@ -2626,9 +2624,9 @@ function App() {
                {[
                  { brand: 'Amazon', value: '$10 Gift Card', icon: <ShoppingCart size={32} className="text-yellow-500" />, cost: 10000, color: 'hover:border-yellow-500/50 hover:bg-yellow-500/10' },
                  { brand: 'Apple', value: '$25 Gift Card', icon: <Zap size={32} className="text-heading" />, cost: 25000, color: 'hover:border-glass-border0 hover:bg-card-alpha0' },
-                 { brand: 'Flipkart', value: '₹500 Voucher', icon: <ShoppingCart size={32} className="text-blue-500" />, cost: 5000, color: 'hover:border-blue-500/50 hover:bg-blue-500/10' },
+                 { brand: 'Flipkart', value: 'Ôé╣500 Voucher', icon: <ShoppingCart size={32} className="text-blue-500" />, cost: 5000, color: 'hover:border-blue-500/50 hover:bg-blue-500/10' },
                  { brand: 'Croma', value: '10% Discount', icon: <Cpu size={32} className="text-teal-500" />, cost: 2000, color: 'hover:border-teal-500/50 hover:bg-teal-500/10' },
-                 { brand: 'Myntra', value: '₹1000 Voucher', icon: <ShoppingCart size={32} className="text-pink-500" />, cost: 10000, color: 'hover:border-pink-500/50 hover:bg-pink-500/10' },
+                 { brand: 'Myntra', value: 'Ôé╣1000 Voucher', icon: <ShoppingCart size={32} className="text-pink-500" />, cost: 10000, color: 'hover:border-pink-500/50 hover:bg-pink-500/10' },
                  { brand: 'Steam', value: '$20 Wallet', icon: <Gamepad2 size={32} className="text-primary" />, cost: 20000, color: 'hover:border-indigo-500/50 hover:bg-primary/10' },
                ].map((v, i) => (
                   <div key={i} className={`glass rounded-[2rem] p-6 border-glass-border transition-all group cursor-pointer ${v.color}`}>
