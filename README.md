@@ -49,7 +49,10 @@ The frontend is a highly interactive Single Page Application built using **React
 - **`components/`**: Modular UI elements like the Wallet Gatekeeper, DApp Viewer, and Security Dashboards.
 - **Neural Guard**: The active security layer blocking ads and trackers on decentralized websites.
 - **Python Backend Engine**: An external service validating gamification metrics and managing the DApp directory.
-
+- 
+**Github Links**
+Frontend : https://github.com/Apoorv-sharma1/web3browser
+Backend : https://github.com/Apoorv-sharma1/web3browser_backend
 ---
 
 ## 🔗 HeLa Integration
