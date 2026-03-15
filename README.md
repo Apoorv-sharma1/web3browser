@@ -31,6 +31,8 @@ It removes the friction from decentralized technologies. By natively rewarding u
   <img src="screenshots/media__1773548500528.png" width="45%" alt="DApp View" />
   <img src="screenshots/media__1773548503095.png" width="45%" alt="Wallet Gateway" />
   <img src="screenshots/media__1773548507357.png" width="45%" alt="Identity Matrix" />
+  <img src="https://i.imgur.com/LN4dnU2.png" width="45%" alt="Mobile View" />
+  <img src="https://i.imgur.com/HmA8rmx.png" width="45%" alt="Mobile View2" />
 </div>
 
 ---
